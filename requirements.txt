@@ -1,0 +1,33 @@
+# Capsule Club Analytics — dependencias
+# Python 3.13. Instalar con:  venv\Scripts\pip install -r requirements.txt
+
+# --- Core datos ---
+pandas>=2.2
+numpy>=1.26
+pyarrow>=16.0            # backend parquet
+duckdb>=1.1
+
+# --- Transformación / modelado (dbt) ---
+dbt-core>=1.9
+dbt-duckdb>=1.9
+
+# --- Series temporales y forecasting ---
+statsmodels>=0.14        # STL, ADF, SARIMA
+prophet>=1.1.6           # forecast con estacionalidad y holidays; ver nota en README
+scipy>=1.13
+
+# --- Machine learning ---
+scikit-learn>=1.5
+lightgbm>=4.5
+
+# --- Generación de datos sintéticos ---
+Faker>=30.0
+
+# --- Visualización e informe ---
+plotly>=5.24
+jinja2>=3.1
+
+# --- Notebooks ---
+jupyterlab>=4.2
+ipykernel>=6.29
+nbformat>=5.10

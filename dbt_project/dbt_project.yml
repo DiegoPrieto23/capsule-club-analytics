@@ -1,0 +1,33 @@
+name: capsule_club
+version: "1.0.0"
+config-version: 2
+
+profile: capsule_club
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+
+clean-targets: ["target", "dbt_packages"]
+
+# Todo el warehouse vive en el esquema `main` del DuckDB local:
+#   staging      -> vistas (tipado + normalización, sin lógica de negocio)
+#   intermediate -> vistas (resolución de identidad, continuidad de SKU, estado mensual)
+#   marts        -> tablas (lo único que consumen los notebooks)
+models:
+  capsule_club:
+    staging:
+      +materialized: view
+      +tags: ["staging"]
+    intermediate:
+      +materialized: view
+      +tags: ["intermediate"]
+    marts:
+      +materialized: table
+      +tags: ["marts"]
+
+vars:
+  # Ventana en la que se considera que la compra de una máquina con cápsulas de
+  # regalo "causó" el alta de suscripción posterior. 120 días cubre el rango
+  # real de conversión (2-11 semanas) sin barrer altas ya no relacionadas.
+  machine_trial_conversion_window_days: 120

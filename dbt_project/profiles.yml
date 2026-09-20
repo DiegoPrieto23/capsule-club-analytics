@@ -1,0 +1,13 @@
+# Perfil local. dbt busca profiles.yml en ~/.dbt por defecto, así que este
+# proyecto se ejecuta desde dbt_project/ con:
+#     dbt run  --profiles-dir .
+#     dbt test --profiles-dir .
+capsule_club:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      # Relativo a dbt_project/. Sobrescribible con CAPSULE_DUCKDB_PATH.
+      path: "{{ env_var('CAPSULE_DUCKDB_PATH', '../data/warehouse.duckdb') }}"
+      schema: main
+      threads: 4

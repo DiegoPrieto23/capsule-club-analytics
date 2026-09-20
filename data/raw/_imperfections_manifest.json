@@ -1,0 +1,125 @@
+{
+  "seed": 20240215,
+  "start_date": "2023-09-01",
+  "end_date": "2026-08-31",
+  "row_counts": {
+    "customers": 12305,
+    "subscriptions": 5110,
+    "subscription_events": 12385,
+    "shipments": 45508,
+    "machines": 5,
+    "machine_orders": 3417,
+    "shop_orders": 39888,
+    "shop_order_lines": 82925,
+    "products": 23,
+    "marketing_touchpoints": 46541,
+    "stores": 8,
+    "payments": 32726
+  },
+  "imperfections": {
+    "ts_sku_relaunched_flavors": 3,
+    "att_customers_null_acquisition_channel": 1466,
+    "identity_duplicate_customers": 305,
+    "att_machine_orders_without_customer": 616,
+    "cohort_machine_bundled_trials": 1188,
+    "cohort_welcome_discount_subs": 2680,
+    "cohort_gifted_subscriptions": 327,
+    "cohort_machine_trial_conversions": 144,
+    "cohort_plan_downgrades": 208,
+    "ts_dunning_payment_failures": 1233,
+    "ts_dunning_recovered": 945,
+    "ts_seasonal_pause_events": 1379,
+    "ts_seasonal_resume_events": 934,
+    "cohort_plan_upgrades": 323,
+    "cohort_welcome_discount_month2_churn": 574,
+    "ts_dunning_involuntary_churn": 274,
+    "cohort_gift_term_end_churn": 197,
+    "ts_gateway_migration_payments_dropped": 244,
+    "att_shop_orders_without_customer": 10946,
+    "ts_stockout_windows": 6,
+    "ts_stockout_censored_order_lines": 966,
+    "ts_stockout_emptied_orders": 113,
+    "att_unresolved_touchpoints": 8171,
+    "att_shared_influencer_code_touchpoints": 906,
+    "att_ios_att_suppressed_touchpoints": 873,
+    "att_direct_unknown_orphan_touchpoints": 9000
+  },
+  "gateway_migration": {
+    "start": "2025-03-10",
+    "end": "2025-03-16"
+  },
+  "ios_att_window": {
+    "start": "2025-01-15",
+    "end": "2025-06-30",
+    "suppression_rate": 0.62
+  },
+  "shared_influencer_code": {
+    "code": "CREMA20",
+    "creators": [
+      "LAURAK",
+      "CAFECONJUAN"
+    ],
+    "window": [
+      "2024-09-01",
+      "2025-02-28"
+    ]
+  },
+  "stockouts": [
+    {
+      "flavor": "decaf_vanilla",
+      "start": "2026-06-22",
+      "end": "2026-07-08",
+      "censored_order_lines": 199
+    },
+    {
+      "flavor": "decaf_vanilla",
+      "start": "2025-03-09",
+      "end": "2025-03-26",
+      "censored_order_lines": 104
+    },
+    {
+      "flavor": "origin_colombia",
+      "start": "2024-07-06",
+      "end": "2024-07-31",
+      "censored_order_lines": 46
+    },
+    {
+      "flavor": "decaf_vanilla",
+      "start": "2025-06-29",
+      "end": "2025-07-18",
+      "censored_order_lines": 96
+    },
+    {
+      "flavor": "seasonal_pumpkin",
+      "start": "2026-02-25",
+      "end": "2026-03-14",
+      "censored_order_lines": 76
+    },
+    {
+      "flavor": "intense_10",
+      "start": "2026-04-24",
+      "end": "2026-05-17",
+      "censored_order_lines": 445
+    }
+  ],
+  "sku_relaunches": [
+    {
+      "flavor": "origin_brazil",
+      "old_sku": "CAP-ORIGIN-BRAZIL-V1",
+      "new_sku": "CAP-ORIGIN-BRAZIL-V2",
+      "switch_date": "2025-10-21"
+    },
+    {
+      "flavor": "classic_espresso",
+      "old_sku": "CAP-CLASSIC-ESPRESSO-V1",
+      "new_sku": "CAP-CLASSIC-ESPRESSO-V2",
+      "switch_date": "2025-10-25"
+    },
+    {
+      "flavor": "seasonal_gingerbread",
+      "old_sku": "CAP-SEASONAL-GINGERBREAD-V1",
+      "new_sku": "CAP-SEASONAL-GINGERBREAD-V2",
+      "switch_date": "2025-03-24"
+    }
+  ]
+}

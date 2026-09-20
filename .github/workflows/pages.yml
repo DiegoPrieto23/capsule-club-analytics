@@ -1,0 +1,40 @@
+# Publica el informe HTML en GitHub Pages.
+#
+# El informe ya está construido y versionado en `report/dist/`, así que aquí no
+# se ejecuta nada: sólo se sube esa carpeta como artefacto de Pages. Para que
+# funcione hay que poner una vez Settings → Pages → Source en "GitHub Actions".
+
+name: Publicar informe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'report/dist/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Una publicación a la vez; si llegan dos push seguidos, gana el último.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: report/dist
+      - id: deployment
+        uses: actions/deploy-pages@v4

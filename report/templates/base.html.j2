@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page.title }} · Capsule Club Analytics</title>
+<meta name="description" content="{{ page.summary|striptags }}">
+<link rel="stylesheet" href="{{ rel }}assets/report.css">
+<script src="{{ rel }}assets/plotly.min.js" charset="utf-8"></script>
+</head>
+<body>
+<a class="skip" href="#contenido">Saltar al contenido</a>
+
+<header class="topbar">
+  <a class="brand" href="{{ rel }}index.html">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span>Capsule&nbsp;Club <b>Analytics</b></span>
+  </a>
+  <button id="theme-toggle" class="ghost" type="button"
+          aria-label="Cambiar entre modo claro y oscuro">
+    <span data-when="light">Modo oscuro</span><span data-when="dark">Modo claro</span>
+  </button>
+</header>
+
+<div class="shell">
+  <nav class="sidenav" aria-label="Páginas del informe">
+    <ol>
+      {% for item in nav %}
+      <li{% if item.slug == page.slug %} aria-current="page"{% endif %}>
+        <a href="{{ rel }}{{ item.file }}">
+          <span class="num">{{ "%02d"|format(loop.index0) }}</span>
+          <span class="txt">{{ item.nav_title }}</span>
+        </a>
+      </li>
+      {% endfor %}
+    </ol>
+    <p class="nav-foot">Datos sintéticos · histórico {{ meta.history }}<br>
+       Generado el {{ meta.generated }}</p>
+  </nav>
+
+  <main id="contenido">
+    <header class="page-head">
+      <p class="eyebrow">{{ page.eyebrow }}</p>
+      <h1>{{ page.title }}</h1>
+      <p class="lede">{{ page.summary }}</p>
+    </header>
+
+    {% block content %}{% endblock %}
+
+    <nav class="pager" aria-label="Navegación entre páginas">
+      {% if prev %}<a class="pager-prev" href="{{ rel }}{{ prev.file }}">
+        <span>Anterior</span><b>{{ prev.nav_title }}</b></a>{% else %}<span></span>{% endif %}
+      {% if next %}<a class="pager-next" href="{{ rel }}{{ next.file }}">
+        <span>Siguiente</span><b>{{ next.nav_title }}</b></a>{% endif %}
+    </nav>
+  </main>
+</div>
+
+<script src="{{ rel }}assets/report.js"></script>
+</body>
+</html>

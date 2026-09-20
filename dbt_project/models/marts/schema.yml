@@ -1,0 +1,430 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: >
+      Dimensión de cliente, con grano de HUMANO (customer_key), no de registro
+      de alta: incorpora la resolución de identidad de int_customer_identity.
+
+      Advertencia de uso: las ventas de boutique sin fidelización no tienen
+      cliente asociado y por tanto no están representadas aquí. La diferencia
+      entre "ingresos totales" e "ingresos atribuibles a un cliente" es real y
+      debe declararse en el informe en vez de cuadrarse a la fuerza.
+
+      Incluye agregados de vida (suscripción, tienda y máquina) porque son el
+      insumo directo del LTV por canal de la página de cierre.
+    columns:
+      - name: customer_key
+        description: PK. Identificador del humano tras resolver variantes de email.
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_customer_identity')
+                field: customer_key
+      - name: first_signup_date
+        description: Primera alta de cualquiera de sus registros.
+        data_tests: [not_null]
+      - name: source_records
+        description: Cuántos registros de alta se fusionaron en este cliente.
+        data_tests: [not_null]
+      - name: has_duplicate_identity
+        description: True si el cliente se había registrado más de una vez.
+        data_tests: [not_null]
+      - name: acquisition_channel
+        description: Canal del registro superviviente; direct_unknown si no atribuible.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['paid_social', 'organic', 'influencer_code', 'referral',
+                         'podcast_ads', 'direct_unknown']
+      - name: home_store_id
+        description: Boutique de alta; NULL si no se dio de alta en tienda.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_stores')
+                field: store_id
+      - name: is_subscriber
+        description: True si llegó a tener al menos una suscripción.
+        data_tests: [not_null]
+      - name: is_machine_trial_conversion
+        description: Compró máquina con cápsulas de regalo y se suscribió después.
+        data_tests: [not_null]
+      - name: lifetime_revenue_eur
+        description: Suscripción cobrada + máquinas + tienda. Base del LTV observado.
+        data_tests: [not_null]
+      - name: days_since_last_shop_order
+        description: Recencia para RFM, medida contra as_of_date. NULL si nunca compró.
+
+  - name: fct_subscriptions_monthly
+    description: >
+      Hechos mensuales de suscripción. Grano (subscription_id, month_start),
+      desde el mes de alta hasta el de baja (o hasta el fin del histórico).
+
+      Alimenta la serie de suscriptores activos, la de ingresos y las curvas de
+      retención por cohorte. Lleva tres medidas de ingreso a propósito:
+      contracted_mrr_eur (tarifa x estado activo, señal limpia), collected_eur
+      (caja real, acusa el hueco de la migración de pasarela) y
+      recognized_revenue_eur (cobro repartido entre los meses de su ciclo, para
+      que los planes anual y trimestral no metan picos artificiales).
+
+      También tres definiciones de activo: is_live, is_active_eom e
+      is_active_net_of_pauses. La estacionalidad de verano sólo aparece en la
+      última; elegir la primera produce una serie monótona y un forecast ciego.
+    columns:
+      - name: subscription_id
+        description: Suscripción a la que pertenece la fila.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_subscriptions')
+                field: subscription_id
+      - name: customer_key
+        description: Cliente resuelto (humano), no el registro de alta.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_key
+      - name: month_start
+        description: Primer día del mes al que se refiere la fila.
+        data_tests: [not_null]
+      - name: cohort_month
+        description: Mes de alta de la suscripción; eje de las curvas de retención.
+        data_tests: [not_null]
+      - name: months_since_start
+        description: Índice de cohorte; 0 = mes de alta.
+        data_tests: [not_null]
+      - name: plan_at_month
+        description: Plan vigente ese mes, ya con upgrades y downgrades aplicados.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['monthly', 'quarterly', 'annual']
+      - name: tier
+        description: Gama de cápsulas contratada.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['classic', 'intense', 'decaf', 'explorer']
+      - name: is_active_net_of_pauses
+        description: Activo al cierre de mes y sin pausa. Es lo que factura y envía.
+        data_tests: [not_null]
+      - name: is_dunning_month
+        description: Fallo de cobro este mes. Ruido en la serie que NO es churn.
+        data_tests: [not_null]
+      - name: contracted_mrr_eur
+        description: Tarifa mensual vigente si está activa y sin pausa; 0 si no. No la afecta el hueco de pagos.
+        data_tests: [not_null]
+      - name: collected_eur
+        description: Caja realmente cobrada ese mes. Sí acusa el hueco de la migración de pasarela.
+        data_tests: [not_null]
+      - name: recognized_revenue_eur
+        description: Cobro repartido entre los meses de su ciclo, para que anual y trimestral no metan picos.
+        data_tests: [not_null]
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [subscription_id, month_start]
+
+  - name: fct_shop_orders
+    description: >
+      Compras puntuales de cápsulas sueltas y merch. Grano: línea de pedido,
+      (order_id, product_sku).
+
+      Sirve a dos páginas distintas con un solo mart: la demanda por SKU
+      trabaja a nivel línea y el RFM agrega por order_id (order_total_eur va
+      repetido en cada línea del pedido, por eso no debe sumarse sin dedupe).
+
+      `customer_key` es NULL en las ventas de boutique sin fidelización: son
+      ingresos reales que no pertenecen a ningún cliente ni a ningún canal.
+      `canonical_sku` agrupa las versiones de un sabor relanzado, que es el eje
+      correcto de la serie de demanda.
+    columns:
+      - name: order_line_id
+        description: "PK sintética de la línea: order_id::product_sku."
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: Pedido al que pertenece la línea.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_shop_orders')
+                field: order_id
+      - name: customer_key
+        description: NULL en venta offline no fidelizada. Es imperfección, no error.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_key
+      - name: order_date
+        description: Fecha del pedido.
+        data_tests: [not_null]
+      - name: channel
+        description: Canal de venta normalizado (online / store).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['online', 'store', 'unknown']
+      - name: product_sku
+        description: SKU tal cual se vendió, sin resolver relanzamientos.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_sku
+      - name: canonical_sku
+        description: SKU raíz del sabor; une las versiones antes y después del relanzamiento.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_sku
+      - name: quantity
+        description: Unidades de la línea.
+        data_tests: [not_null]
+      - name: line_amount_eur
+        description: Importe de la línea (unidades x precio efectivo).
+        data_tests: [not_null]
+      - name: order_total_eur
+        description: Total del pedido, repetido en cada línea. No sumar sin deduplicar.
+        data_tests: [not_null]
+
+  - name: fct_shipments
+    description: >
+      Envíos de cápsulas a suscriptores. Grano: shipment_id.
+
+      Junto con fct_shop_orders da la demanda total por sabor. Mantenerlos
+      separados es lo que permite ver que una rotura de stock censura la
+      demanda de tienda sin censurar necesariamente la del club.
+    columns:
+      - name: shipment_id
+        description: PK del envío.
+        data_tests: [unique, not_null]
+      - name: subscription_id
+        description: Suscripción que recibe el envío.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_subscriptions')
+                field: subscription_id
+      - name: customer_key
+        description: Cliente resuelto que recibe el envío.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_key
+      - name: ship_date
+        description: Fecha de expedición.
+        data_tests: [not_null]
+      - name: capsule_sku
+        description: SKU enviado, sin resolver relanzamientos.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_sku
+      - name: canonical_sku
+        description: SKU raíz del sabor; une las versiones antes y después del relanzamiento.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_sku
+      - name: quantity
+        description: Mangas de cápsulas enviadas.
+        data_tests: [not_null]
+      - name: is_on_time
+        description: Entrega dentro de plazo; empeora en campaña de Navidad.
+        data_tests: [not_null]
+
+  - name: fct_marketing_attribution
+    description: >
+      Touchpoints listos para modelar atribución. Grano: touchpoint_id.
+
+      Conserva todos los touchpoints, también los no resueltos: el attribution
+      gap se mide (attribution_status = 'unattributable'), no se esconde con un
+      inner join.
+
+      `claim_weight` y `weighted_cost_eur` reparten la conversión y el coste
+      entre los creadores que reclaman el mismo código el mismo día. Sumar
+      cost_eur sin más duplica el coste del canal influencer; el mart deja las
+      dos versiones a la vista para que la decisión sea explícita en el análisis.
+    columns:
+      - name: touchpoint_id
+        description: PK del touchpoint.
+        data_tests: [unique, not_null]
+      - name: customer_key
+        description: NULL cuando el touchpoint no resuelve a ningún cliente.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_key
+      - name: channel
+        description: Canal de marketing normalizado.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['paid_social', 'influencer_code', 'podcast_ads',
+                         'referral', 'organic', 'direct_unknown']
+      - name: touchpoint_at
+        description: Instante exacto del impacto; define el orden del recorrido.
+        data_tests: [not_null]
+      - name: touchpoint_date
+        description: Fecha del impacto.
+        data_tests: [not_null]
+      - name: cost_eur
+        description: Coste del touchpoint sin deduplicar reclamaciones.
+        data_tests: [not_null]
+      - name: weighted_cost_eur
+        description: cost_eur repartido entre los creadores que reclaman el mismo código.
+        data_tests: [not_null]
+      - name: claim_weight
+        description: 1/N si varios creadores reclaman el mismo código el mismo día; 1 en el resto.
+        data_tests: [not_null]
+      - name: attribution_status
+        description: attributable | ambiguous_shared_code | unattributable.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['attributable', 'ambiguous_shared_code', 'unattributable']
+      - name: is_attribution_gap
+        description: True si el touchpoint no resuelve a ningún cliente.
+        data_tests: [not_null]
+      - name: linear_credit
+        description: Crédito 1/N para el modelo linear touch. NULL si no hay recorrido.
+
+  - name: fct_machine_orders
+    description: >
+      Venta puntual de máquinas de cápsulas. Grano: machine_order_id.
+
+      Creado para cerrar un hueco real de alcance: la máquina es el 18% del
+      ingreso del histórico y sólo estaba disponible agregada por cliente en
+      dim_customers, lo que impedía construir su serie temporal. La página de
+      ingresos la consume como cuarto canal y la de CAC x LTV la necesita para
+      el valor de vida completo.
+
+      Misma advertencia que fct_shop_orders: la venta de boutique sin
+      fidelización tiene customer_key NULL, y es imperfección documentada.
+    columns:
+      - name: machine_order_id
+        description: PK del pedido de máquina.
+        data_tests: [unique, not_null]
+      - name: customer_key
+        description: NULL en venta de boutique no fidelizada. Es imperfección, no error.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_key
+      - name: order_date
+        description: Fecha del pedido.
+        data_tests: [not_null]
+      - name: channel
+        description: Canal de venta normalizado (online / store).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['online', 'store']
+      - name: machine_model_id
+        description: Modelo vendido.
+        data_tests: [not_null]
+      - name: price_paid_eur
+        description: Importe realmente pagado. Es la base de la serie de ingreso de máquina.
+        data_tests: [not_null]
+      - name: list_price_eur
+        description: Tarifa del modelo, para separar precio de volumen.
+        data_tests: [not_null]
+      - name: discount_rate
+        description: 1 - (pagado / tarifa). Cero si no hay tarifa de referencia.
+        data_tests: [not_null]
+      - name: has_bundled_capsules_trial
+        description: La máquina salió con cápsulas de regalo.
+        data_tests: [not_null]
+      - name: is_trial_conversion
+        description: >
+          Compró con cápsulas de regalo y se suscribió semanas después. Un join
+          ingenuo por fecha exacta lo perdería; ver would_match_naive_same_day_join.
+        data_tests: [not_null]
+      - name: was_already_subscriber
+        description: Ya era suscriptor al comprar la máquina, así que no es conversión.
+        data_tests: [not_null]
+      - name: conversion_lag_days
+        description: Días entre la compra de máquina y el alta. NULL si no convirtió.
+
+  - name: dim_subscriptions
+    description: >
+      Dimensión de suscripción. Grano: subscription_id.
+
+      Creado porque fct_subscriptions_monthly es mensual y no permite analizar el
+      flujo diario de altas. La página de suscriptores usaba
+      dim_customers.first_subscription_date como sustituto, que cuenta primeras
+      suscripciones por cliente (5.047) y no altas de suscripción (5.110): se
+      perdían las resuscripciones.
+
+      observed_days va siempre acompañado de is_right_censored: una suscripción
+      viva al cierre del histórico no ha durado ese tiempo, es que todavía no ha
+      terminado. Tratarlas igual subestima la vida media.
+    columns:
+      - name: subscription_id
+        description: PK de la suscripción.
+        data_tests: [unique, not_null]
+      - name: customer_key
+        description: Cliente resuelto (humano) tras la deduplicación de identidad.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_key
+      - name: start_date
+        description: Fecha de alta, a grano diario. Es el evento del flujo de altas.
+        data_tests: [not_null]
+      - name: cohort_month
+        description: Mes de alta; eje de las curvas de retención.
+        data_tests: [not_null]
+      - name: cancel_date
+        description: Fecha de baja. NULL si sigue viva al cierre del histórico.
+      - name: status
+        description: Estado final de la suscripción dentro del histórico.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['active', 'paused', 'cancelled']
+      - name: tier
+        description: Gama de cápsulas contratada.
+        data_tests: [not_null]
+      - name: had_welcome_discount
+        description: Tuvo descuento de bienvenida el primer ciclo.
+        data_tests: [not_null]
+      - name: is_gifted
+        description: Suscripción regalada; no sigue el patrón normal del titular.
+        data_tests: [not_null]
+      - name: observed_days
+        description: Días observados de vida, hasta la baja o hasta el cierre del histórico.
+        data_tests: [not_null]
+      - name: is_right_censored
+        description: True si sigue viva al cierre; su duración real es mayor que la observada.
+        data_tests: [not_null]

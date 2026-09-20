@@ -1,0 +1,20 @@
+{% extends "base.html.j2" %}
+{% import "macros.html.j2" as ui %}
+
+{% block content %}
+{% if page.hero %}{{ ui.hero(page.hero) }}{% endif %}
+{% if page.kpis %}{{ ui.kpis(page.kpis) }}{% endif %}
+{% if page.glossary %}{{ ui.glossary(page.glossary) }}{% endif %}
+
+{% for section in page.sections %}
+<section class="block">
+  {% if section.heading %}<h2>{{ section.heading }}</h2>{% endif %}
+  {% if section.blocks %}{{ ui.prose(section.blocks) }}{% endif %}
+  {{ ui.figgrid(section.figures) }}
+  {% if section.after %}{{ ui.prose(section.after) }}{% endif %}
+</section>
+{% endfor %}
+
+{% if page.actions %}{{ ui.actions(page.actions) }}{% endif %}
+{% if page.takeaways %}{{ ui.takeaways(page.takeaways) }}{% endif %}
+{% endblock %}

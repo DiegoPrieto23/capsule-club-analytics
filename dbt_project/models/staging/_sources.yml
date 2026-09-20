@@ -1,0 +1,23 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Tablas crudas generadas por data_generation/generate_synthetic_data.py.
+      Deliberadamente imperfectas (ver docs/data_imperfections.md): ninguna
+      corrección ocurre aquí, sólo en intermediate/marts y siempre de forma
+      explícita y documentada.
+    schema: main
+    tables:
+      - name: raw_customers
+      - name: raw_subscriptions
+      - name: raw_subscription_events
+      - name: raw_shipments
+      - name: raw_machines
+      - name: raw_machine_orders
+      - name: raw_shop_orders
+      - name: raw_shop_order_lines
+      - name: raw_products
+      - name: raw_marketing_touchpoints
+      - name: raw_stores
+      - name: raw_payments

@@ -1,0 +1,318 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: >
+      Un registro por alta en el sistema. OJO: no es "un humano" — un mismo
+      humano puede aparecer varias veces con emails variantes. La deduplicación
+      ocurre en int_customer_identity, nunca aquí.
+    columns:
+      - name: customer_id
+        description: PK de la fila de alta (no del humano).
+        data_tests: [unique, not_null]
+      - name: signup_date
+        description: Primera vez que este registro aparece en cualquier sistema.
+        data_tests: [not_null]
+      - name: acquisition_channel
+        description: Canal normalizado; los NULL de origen pasan a direct_unknown.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['paid_social', 'organic', 'influencer_code', 'referral',
+                         'podcast_ads', 'direct_unknown']
+      - name: has_unknown_acquisition_channel
+        description: True si el canal venía NULL en origen. Base del attribution gap.
+        data_tests: [not_null]
+      - name: home_store_id
+        description: Boutique de alta; NULL si el alta no fue en tienda física.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_stores')
+                field: store_id
+      - name: email_clean
+        description: Email en minúsculas y sin espacios. Sin resolver variantes todavía.
+
+  - name: stg_stores
+    description: Catálogo de boutiques físicas. Algunas abren dentro del histórico.
+    columns:
+      - name: store_id
+        description: PK de la boutique.
+        data_tests: [unique, not_null]
+      - name: opening_date
+        description: Fecha de apertura; varias abren dentro del histórico.
+        data_tests: [not_null]
+
+  - name: stg_products
+    description: >
+      Catálogo de SKUs. Un mismo sabor puede tener varios SKUs a lo largo del
+      tiempo (relanzamiento con packaging/precio nuevo): la continuidad se
+      resuelve en int_product_sku_continuity.
+    columns:
+      - name: product_sku
+        description: PK del SKU.
+        data_tests: [unique, not_null]
+      - name: product_type
+        description: capsule o merch.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: ['capsule', 'merch']}
+      - name: flavor
+        description: Sólo informado para cápsulas.
+      - name: replaced_by_sku
+        description: SKU que sustituye a éste tras el relanzamiento.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_sku
+
+  - name: stg_machines
+    description: Catálogo de modelos de cafetera.
+    columns:
+      - name: machine_model_id
+        description: PK del modelo de cafetera.
+        data_tests: [unique, not_null]
+      - name: list_price_eur
+        description: Precio de catálogo del modelo.
+        data_tests: [not_null]
+
+  - name: stg_subscriptions
+    description: >
+      Una fila por suscripción. `current_plan` es el plan vigente hoy, no el de
+      alta: el histórico de plan se reconstruye desde stg_subscription_events.
+    columns:
+      - name: subscription_id
+        description: PK de la suscripción.
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: Registro de alta titular (sin resolver identidad).
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('stg_customers'), field: customer_id}
+      - name: current_plan
+        description: Plan vigente hoy, no el de alta.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: ['monthly', 'quarterly', 'annual']}
+      - name: tier
+        description: Gama de cápsulas contratada.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: ['classic', 'intense', 'decaf', 'explorer']}
+      - name: status
+        description: Estado final observado (active / paused / cancelled).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: ['active', 'paused', 'cancelled']}
+      - name: cancel_reason
+        description: Motivo de baja; NULL si sigue viva.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['price', 'taste', 'moved', 'no_reason',
+                         'involuntary_payment_failure']
+      - name: is_involuntary_churn
+        description: Churn por fallo de cobro; no comparable con la baja voluntaria.
+        data_tests: [not_null]
+      - name: cohort_month
+        description: Mes de alta de la suscripción; eje de las curvas de retención.
+        data_tests: [not_null]
+
+  - name: stg_subscription_events
+    description: >
+      Log de eventos de suscripción. Es la única fuente fiable del estado real
+      mes a mes: `status` en stg_subscriptions sólo refleja la foto final.
+    columns:
+      - name: event_id
+        description: PK del evento.
+        data_tests: [unique, not_null]
+      - name: subscription_id
+        description: Suscripción afectada.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('stg_subscriptions'), field: subscription_id}
+      - name: event_type
+        description: Tipo de evento del ciclo de vida.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['created', 'paused', 'resumed', 'upgraded', 'downgraded',
+                         'payment_failed', 'payment_retried_ok', 'cancelled']
+      - name: event_family
+        description: >
+          Agrupación de eventos (lifecycle_pause / plan_change / dunning /
+          churn / creation) para no confundir pausa y dunning con cancelación.
+        data_tests: [not_null]
+
+  - name: stg_payments
+    description: >
+      Cobros de suscripción. Contiene un hueco real de ~1 semana por migración
+      de pasarela de pago: NO se rellena aquí, se trata explícitamente en el
+      análisis de ingresos.
+    columns:
+      - name: payment_id
+        description: PK del cobro.
+        data_tests: [unique, not_null]
+      - name: subscription_id
+        description: Suscripción cobrada.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('stg_subscriptions'), field: subscription_id}
+      - name: status
+        description: success / failed / retried_success.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: ['success', 'failed', 'retried_success']}
+      - name: is_collected
+        description: True si el cobro acabó entrando en caja (incluye reintentos).
+        data_tests: [not_null]
+
+  - name: stg_shipments
+    description: Envío mensual de cápsulas a un suscriptor activo.
+    columns:
+      - name: shipment_id
+        description: PK del envío.
+        data_tests: [unique, not_null]
+      - name: subscription_id
+        description: Suscripción que lo recibe.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('stg_subscriptions'), field: subscription_id}
+      - name: capsule_sku
+        description: SKU enviado, sin resolver relanzamientos.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('stg_products'), field: product_sku}
+      - name: quantity
+        description: Mangas de cápsulas enviadas.
+        data_tests: [not_null]
+
+  - name: stg_shop_orders
+    description: >
+      Compra puntual (cápsulas sueltas o merch), no ligada a suscripción.
+      customer_id es NULL en las ventas de boutique sin fidelización.
+    columns:
+      - name: order_id
+        description: PK del pedido.
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: NULL en venta offline no fidelizada. Es imperfección, no error.
+        data_tests:
+          - relationships:
+              arguments: {to: ref('stg_customers'), field: customer_id}
+      - name: channel
+        description: Canal de venta normalizado (online / store).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: ['online', 'store', 'unknown']}
+      - name: store_id
+        description: Boutique donde se hizo el pedido; NULL si fue online.
+        data_tests:
+          - relationships:
+              arguments: {to: ref('stg_stores'), field: store_id}
+      - name: is_identified_customer
+        description: False en la venta offline no fidelizada.
+        data_tests: [not_null]
+
+  - name: stg_shop_order_lines
+    description: >
+      Líneas de pedido con grano (pedido, SKU). El generador ya agrega la cesta
+      por SKU, así que hoy no hay duplicados que consolidar; la agregación se
+      mantiene como defensa (un sistema de origen real sí los produce) y
+      `was_consolidated` deja ver si alguna vez vuelven a aparecer.
+    columns:
+      - name: order_line_id
+        description: PK sintética de la línea (order_id::product_sku).
+        data_tests: [unique, not_null]
+      - name: order_id
+        description: Pedido al que pertenece.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('stg_shop_orders'), field: order_id}
+      - name: product_sku
+        description: SKU vendido.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('stg_products'), field: product_sku}
+      - name: line_amount_eur
+        description: Importe de la línea tras consolidar duplicados.
+        data_tests: [not_null]
+      - name: was_consolidated
+        description: True si el pedido traía el mismo SKU en más de una línea.
+        data_tests: [not_null]
+
+  - name: stg_machine_orders
+    description: >
+      Compra puntual de máquina. `has_bundled_capsules_trial` marca las que
+      llevaban cápsulas de regalo: son el origen de conversiones a suscripción
+      semanas después (ver int_machine_trial_conversions).
+    columns:
+      - name: machine_order_id
+        description: PK del pedido de máquina.
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: NULL en venta de boutique sin fidelización.
+        data_tests:
+          - relationships:
+              arguments: {to: ref('stg_customers'), field: customer_id}
+      - name: machine_model_id
+        description: Modelo comprado.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('stg_machines'), field: machine_model_id}
+      - name: channel
+        description: Canal de venta normalizado (online / store).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: {values: ['online', 'store', 'unknown']}
+      - name: has_bundled_capsules_trial
+        description: La máquina venía con cápsulas de regalo.
+        data_tests: [not_null]
+
+  - name: stg_marketing_touchpoints
+    description: >
+      Touchpoints de marketing. Incluye los no resueltos a cliente (tráfico
+      anónimo y la caída de atribución de paid_social), que son precisamente
+      los que definen el attribution gap.
+    columns:
+      - name: touchpoint_id
+        description: PK del impacto de marketing.
+        data_tests: [unique, not_null]
+      - name: customer_id
+        description: NULL cuando el touchpoint no resuelve a ningún cliente.
+        data_tests:
+          - relationships:
+              arguments: {to: ref('stg_customers'), field: customer_id}
+      - name: channel
+        description: Canal normalizado; NULL de origen pasa a direct_unknown.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['paid_social', 'influencer_code', 'podcast_ads',
+                         'referral', 'organic', 'direct_unknown']
+      - name: touchpoint_at
+        description: Instante exacto del impacto; desempata el orden dentro del día.
+        data_tests: [not_null]
+      - name: influencer_code
+        description: Código promocional extraído de campaign_id (INFL-<CÓDIGO>-<CREADOR>).
+      - name: influencer_creator
+        description: Creador extraído de campaign_id. Un mismo código puede tener dos.

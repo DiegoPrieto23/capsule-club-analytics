@@ -1,0 +1,218 @@
+version: 2
+
+models:
+  - name: int_customer_identity
+    description: >
+      Mapa registro de alta -> humano. Un mismo cliente puede haberse dado de
+      alta varias veces con variantes del mismo email (mayúsculas, alias '+',
+      puntos en el local part, dominio alternativo del mismo proveedor).
+
+      Decisión de negocio explícita: se asume que el mismo local part
+      normalizado en dominios del mismo proveedor (gmail/googlemail,
+      hotmail/outlook, yahoo.es/yahoo.com, icloud/me) es la misma persona. Es
+      una heurística: para un falso positivo hacen falta dos personas con local
+      part idéntico Y grupo de dominio idéntico. `identity_match_rule` permite
+      auditar cuánta deduplicación se apoya en heurística y cuánta es segura.
+
+      Sobre 12.480 registros de alta resuelve 490 secundarios y deja 11.990
+      clientes únicos.
+    columns:
+      - name: customer_id
+        description: PK del registro de alta en origen.
+        data_tests: [unique, not_null]
+      - name: customer_key
+        description: Identificador del humano. Gana el registro de alta más antigua.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+      - name: email_identity_key
+        description: Email normalizado que define la identidad.
+        data_tests: [not_null]
+      - name: is_duplicate_identity
+        description: True si esta identidad agrupa más de un registro de alta.
+        data_tests: [not_null]
+      - name: is_secondary_record
+        description: True en los registros que NO sobreviven a la deduplicación.
+        data_tests: [not_null]
+      - name: identity_match_rule
+        description: no_match | exact_match (emails idénticos) | normalized_match.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['no_match', 'exact_match', 'normalized_match']
+
+  - name: int_product_sku_continuity
+    description: >
+      Resuelve la cadena replaced_by_sku y asigna a cada SKU su `canonical_sku`
+      (primera versión del sabor). Sin esto, la serie de demanda de un sabor
+      relanzado se parte en dos series cortas el mes del relanzamiento.
+      Implementado con CTE recursiva: soporta cadenas de más de dos versiones.
+    columns:
+      - name: product_sku
+        description: SKU concreto, tal cual aparece en pedidos y envíos.
+        data_tests: [unique, not_null]
+      - name: canonical_sku
+        description: SKU raíz de la cadena; eje correcto de la serie por sabor.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_sku
+      - name: version_number
+        description: 1 = versión original, 2 = primer relanzamiento, etc.
+        data_tests: [not_null]
+      - name: flavor_was_relaunched
+        description: True si el sabor tuvo alguna vez más de una versión de SKU.
+        data_tests: [not_null]
+
+  - name: int_subscription_monthly_state
+    description: >
+      Estado real de cada suscripción mes a mes, reconstruido desde el log de
+      eventos con ASOF JOIN. Grano (subscription_id, month_start).
+
+      Expone tres definiciones de "activo" a propósito, porque la elección
+      cambia la serie a forecastear: is_live (la suscripción existe),
+      is_active_eom (sigue viva al cierre de mes) e is_active_net_of_pauses
+      (además no está pausada). La estacionalidad de verano sólo es visible en
+      la tercera: con la primera, la serie crece de forma monótona.
+    columns:
+      - name: subscription_id
+        description: Suscripción a la que pertenece la fila.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_subscriptions')
+                field: subscription_id
+      - name: month_start
+        description: Primer día del mes al que se refiere la fila.
+        data_tests: [not_null]
+      - name: plan_at_month
+        description: Plan vigente ese mes, tras aplicar upgrades y downgrades.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['monthly', 'quarterly', 'annual']
+      - name: months_since_start
+        description: Índice de cohorte (0 = mes de alta).
+        data_tests: [not_null]
+      - name: is_paused
+        description: Pausado al cierre de mes. No es churn, pero no factura.
+        data_tests: [not_null]
+      - name: is_active_net_of_pauses
+        description: "Activa al cierre de mes y sin pausa: la definición que factura y envía."
+        data_tests: [not_null]
+      - name: is_dunning_month
+        description: Fallo de cobro este mes; el suscriptor desaparece sin cancelar.
+        data_tests: [not_null]
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [subscription_id, month_start]
+
+  - name: int_plan_price_list
+    description: >
+      Tarifa mensual efectiva por (tier, plan), derivada de los cobros reales en
+      vez de hardcodeada, para que el MRR contratado no dependa de constantes
+      copiadas del generador. Excluye el primer ciclo con descuento de
+      bienvenida: incluirlo sesgaría el precio a la baja y haría parecer una
+      bajada de tarifa lo que en realidad es el fin del descuento.
+    columns:
+      - name: tier
+        description: Gama de cápsulas.
+        data_tests: [not_null]
+      - name: plan
+        description: Cadencia de facturación (monthly / quarterly / annual).
+        data_tests: [not_null]
+      - name: monthly_price_eur
+        description: Precio de catálogo repartido a mes (el ciclo anual se divide entre 12).
+        data_tests: [not_null]
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [tier, plan]
+
+  - name: int_machine_trial_conversions
+    description: >
+      Compradores de máquina con cápsulas de regalo que acaban suscribiéndose.
+      Grano: pedido de máquina con trial de un cliente identificado.
+
+      El join va por customer_key (identidad resuelta) y con ventana de
+      {{ var('machine_trial_conversion_window_days') }} días, no por fecha
+      exacta: la conversión ocurre entre 2 y 11 semanas después de la compra.
+      `would_match_naive_same_day_join` permite medir qué encontraría el join
+      ingenuo. La cifra de conversiones es un máximo: dentro de la ventana
+      también caen altas que habrían ocurrido igual sin el trial, así que la
+      ventana es una decisión de negocio a contrastar en el análisis.
+    columns:
+      - name: machine_order_id
+        description: "PK: pedido de máquina con cápsulas de regalo."
+        data_tests: [unique, not_null]
+      - name: customer_key
+        description: Cliente resuelto que compró la máquina.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_customer_identity')
+                field: customer_key
+      - name: subscription_id
+        description: Primera suscripción dentro de la ventana; NULL si no convirtió.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_subscriptions')
+                field: subscription_id
+      - name: is_trial_conversion
+        description: Se suscribió dentro de la ventana sin ser suscriptor previo.
+        data_tests: [not_null]
+      - name: conversion_lag_days
+        description: Días entre compra de máquina y alta. NULL si no convirtió.
+      - name: was_already_subscriber
+        description: Ya estaba suscrito al comprar la máquina; excluido de la conversión.
+        data_tests: [not_null]
+
+  - name: int_marketing_journeys
+    description: >
+      Touchpoints enriquecidos con su posición en el recorrido del cliente y con
+      la fecha de conversión a suscripción. Base de los modelos de atribución
+      (first/last/linear touch y Markov).
+
+      Los touchpoints sin customer_key no tienen recorrido: son el attribution
+      gap y se conservan a propósito para poder cuantificarlo en vez de
+      hacerlos desaparecer con un inner join.
+    columns:
+      - name: touchpoint_id
+        description: PK del touchpoint.
+        data_tests: [unique, not_null]
+      - name: customer_key
+        description: NULL si el touchpoint no resuelve a ningún cliente.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('int_customer_identity')
+                field: customer_key
+      - name: channel
+        description: Canal de marketing normalizado.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['paid_social', 'influencer_code', 'podcast_ads',
+                         'referral', 'organic', 'direct_unknown']
+      - name: journey_rank
+        description: Posición del touchpoint en el recorrido. NULL si no resuelve.
+      - name: converted_to_subscription
+        description: El cliente de este touchpoint acabó suscribiéndose.
+        data_tests: [not_null]
+      - name: is_shared_code_duplicate_claim
+        description: >
+          Mismo código de influencer reclamado por dos creadores el mismo día
+          para el mismo cliente. Sin deduplicar, infla el CAC del canal.
+        data_tests: [not_null]

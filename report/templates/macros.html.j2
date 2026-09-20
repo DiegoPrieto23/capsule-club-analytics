@@ -1,0 +1,151 @@
+{#
+   Piezas del informe. Cada una se construye en HTML plano: nada depende de un
+   framework y todo funciona abriendo el fichero con file://.
+#}
+
+{% macro stat(tile) %}
+<div class="stat">
+  <p class="stat-label">{{ tile.label }}</p>
+  <p class="stat-value">{{ tile.value }}</p>
+  {% if tile.note %}<p class="stat-note">{{ tile.note }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+
+{% macro kpis(tiles) %}
+<section class="kpi-row" aria-label="Indicadores principales">
+  {% for tile in tiles %}{{ stat(tile) }}{% endfor %}
+</section>
+{% endmacro %}
+
+
+{% macro hero(block) %}
+<section class="hero">
+  <p class="hero-value">{{ block.value }}</p>
+  <div class="hero-text">
+    <p class="hero-label">{{ block.label }}</p>
+    {% if block.note %}<p class="hero-note">{{ block.note }}</p>{% endif %}
+  </div>
+</section>
+{% endmacro %}
+
+
+{#
+   Glosario. Dos vías a la misma definición: el término subrayado en el texto
+   abre un globo al pasar por encima o al tabular hasta él, y la caja de abajo
+   las lista todas para quien lea en papel o con lector de pantalla.
+#}
+{% macro glossary(terms) %}
+<details class="glossary">
+  <summary>Qué significa cada término de esta página</summary>
+  <dl>
+    {% for term in terms %}
+    <div>
+      <dt>{{ term.name }}</dt>
+      <dd>{{ term.definition }}</dd>
+    </div>
+    {% endfor %}
+  </dl>
+</details>
+{% endmacro %}
+
+
+{#
+   Tarjeta de gráfico. Lleva SIEMPRE su tabla equivalente en un <details>: el
+   color nunca es la única vía para leer un valor, y el lector de pantalla y la
+   impresión tienen la misma información que el hover.
+#}
+{% macro chart(fig) %}
+<figure class="card{% if fig.width == 'full' %} full{% endif %}" id="fig-{{ fig.id }}">
+  <figcaption>
+    <h3>{{ fig.title }}</h3>
+    {% if fig.subtitle %}<p>{{ fig.subtitle }}</p>{% endif %}
+  </figcaption>
+  <div class="plot" id="plot-{{ fig.id }}"
+       data-spec-light='{{ fig.light }}' data-spec-dark='{{ fig.dark }}'
+       role="img" aria-label="{{ fig.alt }}"></div>
+  {% if fig.table %}
+  <details class="tabledata">
+    <summary>Ver los datos de este gráfico</summary>
+    <div class="scroll">
+      <table>
+        <caption class="sr-only">{{ fig.title }}</caption>
+        <thead><tr>{% for h in fig.table.header %}<th{% if not loop.first %} class="num"{% endif %}>{{ h }}</th>{% endfor %}</tr></thead>
+        <tbody>
+          {% for row in fig.table.rows %}
+          <tr>{% for cell in row %}<td{% if not loop.first %} class="num"{% endif %}>{{ cell }}</td>{% endfor %}</tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
+  {% endif %}
+  {% if fig.source %}<p class="source">{{ fig.source }}</p>{% endif %}
+</figure>
+{% endmacro %}
+
+
+{% macro figgrid(figures) %}
+{% if figures %}
+<div class="figgrid">
+  {% for fig in figures %}{{ chart(fig) }}{% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+
+{% macro prose(blocks) %}
+{% for block in blocks %}
+  {% if block.kind == "h2" %}<h2>{{ block.text }}</h2>
+  {% elif block.kind == "h3" %}<h3>{{ block.text }}</h3>
+  {% elif block.kind == "p" %}<p>{{ block.html if block.html else block.text }}</p>
+  {% elif block.kind == "note" %}<aside class="note"><p>{{ block.text }}</p></aside>
+  {% elif block.kind == "flag" %}<aside class="flag"><p><b>{{ block.tag }}</b> {{ block.text }}</p></aside>
+  {% elif block.kind == "list" %}
+    <ul>{% for li in block.bullets %}<li>{{ li }}</li>{% endfor %}</ul>
+  {% elif block.kind == "table" %}
+    <div class="scroll"><table class="plain">
+      <thead><tr>{% for h in block.header %}<th{% if not loop.first %} class="num"{% endif %}>{{ h }}</th>{% endfor %}</tr></thead>
+      <tbody>{% for row in block.rows %}<tr>{% for cell in row %}<td{% if not loop.first %} class="num"{% endif %}>{{ cell }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+    </table></div>
+  {% endif %}
+{% endfor %}
+{% endmacro %}
+
+
+{#
+   Recomendaciones. Un informe que sólo describe no sirve de nada: cada hallazgo
+   termina en algo que alguien tiene que hacer, con el número que lo justifica y
+   la métrica con la que se sabrá si funcionó.
+#}
+{% macro actions(block) %}
+<section class="actions" aria-label="Recomendaciones">
+  <header>
+    <h2>{{ block.heading|default("Qué hacer con esto") }}</h2>
+    <p>{{ block.intro|default("Cada punto sale de un hallazgo de esta página. El impacto es una estimación con los datos del informe, no una promesa.") }}</p>
+  </header>
+  <ol class="action-list">
+    {% for item in block.steps %}
+    <li class="action">
+      <span class="action-n">{{ "%02d"|format(loop.index) }}</span>
+      <p class="action-do">{{ item.do }}</p>
+      <p class="action-why">{{ item.why }}</p>
+      <div class="action-meta">
+        {% if item.impact %}<span class="chip impact"><b>Impacto</b> {{ item.impact }}</span>{% endif %}
+        {% if item.owner %}<span class="chip"><b>Quién</b> {{ item.owner }}</span>{% endif %}
+        {% if item.measure %}<span class="chip"><b>Se mide con</b> {{ item.measure }}</span>{% endif %}
+        {% if item.effort %}<span class="chip"><b>Esfuerzo</b> {{ item.effort }}</span>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endmacro %}
+
+
+{% macro takeaways(items) %}
+<section class="takeaways">
+  <h2>Lo que hay que llevarse</h2>
+  <ol>{% for item in items %}<li>{{ item }}</li>{% endfor %}</ol>
+</section>
+{% endmacro %}

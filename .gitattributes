@@ -1,0 +1,13 @@
+# Normaliza los finales de línea: el repo guarda LF y cada quien recibe los de
+# su sistema. Sin esto, editar desde Windows mete un diff entero de CRLF.
+* text=auto eol=lf
+
+# Binarios: que git no intente convertirlos ni mostrarlos como texto.
+*.png binary
+*.parquet binary
+*.duckdb binary
+
+# El informe y los cuadernos son el entregable, pero ensucian los diffs:
+# GitHub los cuenta aparte en las estadísticas del repo.
+report/dist/** linguist-vendored
+*.ipynb linguist-documentation
