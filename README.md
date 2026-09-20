@@ -12,22 +12,22 @@ Capsule Club es una marca de café en cápsulas que no existe. Vende de cuatro
 formas a la vez: un club por suscripción que manda cápsulas cada mes, una tienda
 online, unas cuantas boutiques físicas y máquinas de café como compra puntual.
 
-Me inventé el negocio entero —tres años de historia, 280.000 filas— para poder
-hacer con él lo que se hace con los datos de un negocio real: entender qué está
-pasando, predecir qué va a pasar y decir qué habría que cambiar.
+El negocio está simulado entero —tres años de historia, 280.000 filas— para
+poder hacer con él lo que se hace con los datos de un negocio real: entender qué
+está pasando, predecir qué va a pasar y decir qué habría que cambiar.
 
 El resultado es **un informe de siete páginas** que empieza por un resumen
 ejecutivo y termina en un plan de acción. Cada página cuenta un hallazgo, lo
 demuestra con un gráfico y acaba en recomendaciones concretas: qué hacer, por
 qué, cuánto vale y con qué métrica se sabrá si funcionó.
 
-## Por qué lo hice
+## Qué pretende demostrar
 
-Para enseñar que sé hacer la parte que no es montar el *pipeline*: mirar los
-datos, encontrar lo que importa, comprobar que es verdad y contarlo de forma que
-alguien pueda decidir con ello.
+La parte que no es montar el *pipeline*: mirar los datos, encontrar lo que
+importa, comprobar que es verdad y contarlo de forma que alguien pueda decidir
+con ello.
 
-Un informe bonito lo hace cualquiera. La gracia está en tres cosas:
+Un informe bonito lo hace cualquiera. La diferencia está en tres cosas:
 
 - **Los datos están rotos a propósito.** Hay roturas de stock que parecen falta
   de demanda, una semana de cobros perdida por una migración, suscripciones
