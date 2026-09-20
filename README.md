@@ -1,6 +1,6 @@
 # Capsule Club Analytics
 
-**[→ Ver el informe interactivo](https://diegoprieto23.github.io/capsule-club-analytics/)**
+### 👉 **[Ver el informe interactivo en vivo](https://diegoprieto23.github.io/capsule-club-analytics/)**
 
 [![El informe](img/portada.png)](https://diegoprieto23.github.io/capsule-club-analytics/)
 
@@ -95,15 +95,119 @@ hay una capa que limpia (`staging`) y otra que resuelve la lógica de negocio
 difícil (`intermediate`): unificar clientes duplicados, reconstruir el recorrido
 de marketing de cada alta, calcular el estado de cada suscripción mes a mes.
 
+Así entran, tal y como los deja el generador:
+
+```mermaid
+erDiagram
+    customers {
+        string customer_id PK
+        date   signup_date
+        string acquisition_channel
+        string home_store_id FK "nullable"
+        string email_raw
+    }
+    subscriptions {
+        string subscription_id PK
+        string customer_id FK
+        string plan "monthly / quarterly / annual"
+        string tier "classic / intense / decaf / explorer"
+        date   start_date
+        string status "active / paused / cancelled"
+        string cancel_reason "nullable"
+        bool   had_welcome_discount
+        bool   gifted
+    }
+    subscription_events {
+        string event_id PK
+        string subscription_id FK
+        string event_type "alta, pausa, cambio de plan, fallo de cobro, baja"
+        date   event_date
+    }
+    shipments {
+        string shipment_id PK
+        string subscription_id FK
+        string capsule_sku FK
+        date   ship_date
+        int    quantity
+        bool   on_time
+    }
+    payments {
+        string payment_id PK
+        string subscription_id FK
+        date   payment_date
+        float  amount
+        string status "success / failed / retried_success"
+    }
+    shop_orders {
+        string order_id PK
+        string customer_id FK "nullable"
+        date   order_date
+        string channel "online / store"
+        string store_id FK "nullable"
+    }
+    shop_order_lines {
+        string order_id PK "FK a shop_orders"
+        string product_sku PK "FK a products"
+        int    quantity
+        float  unit_price
+    }
+    machine_orders {
+        string order_id PK
+        string customer_id FK "nullable"
+        string machine_model_id FK
+        string store_id FK "nullable"
+        date   order_date
+        bool   bundled_capsules_trial
+    }
+    products {
+        string product_sku PK
+        string product_type "capsule / merch"
+        string flavor
+        date   launch_date
+        date   discontinue_date "nullable"
+        string replaced_by_sku "nullable"
+    }
+    machines {
+        string machine_model_id PK
+        string name
+        float  price
+    }
+    stores {
+        string store_id PK
+        string city
+        date   opening_date
+    }
+    marketing_touchpoints {
+        string touchpoint_id PK
+        string customer_id FK "nullable"
+        string channel "paid_social / podcast / influencer / referral / organic"
+        string campaign_id
+        float  cost
+        datetime timestamp
+        bool   resolved_to_conversion
+    }
+
+    customers            ||--o{ subscriptions         : "se suscribe"
+    customers            |o--o{ shop_orders           : "compra en tienda"
+    customers            |o--o{ machine_orders        : "compra máquina"
+    customers            |o--o{ marketing_touchpoints : "recibe impactos"
+    customers            }o--o| stores                : "tienda de alta"
+    subscriptions        ||--o{ subscription_events   : "registra"
+    subscriptions        ||--o{ shipments             : "genera envíos"
+    subscriptions        ||--o{ payments              : "se cobra en"
+    shipments            }o--|| products              : "envía el SKU"
+    shop_orders          ||--|{ shop_order_lines      : "se desglosa en"
+    shop_order_lines     }o--|| products              : "referencia"
+    shop_orders          }o--o| stores                : "se hace en"
+    machine_orders       }o--|| machines              : "modelo"
+    machine_orders       }o--o| stores                : "se hace en"
 ```
-customers ──┬─ subscriptions ── subscription_events
-            │        └─ shipments ── products
-            ├─ shop_orders ── shop_order_lines ── products
-            ├─ machine_orders ── machines
-            ├─ payments
-            └─ marketing_touchpoints
-                                        stores
-```
+
+Los extremos opcionales del diagrama son deliberados y son los que dan trabajo:
+un pedido puede no tener cliente (compra en boutique sin fidelización, el 27,4%
+de los pedidos de tienda), un impacto de marketing puede no resolverse a nadie
+—el 39,4%— y un cliente puede no tener tienda de alta porque entró por internet.
+Cada uno de esos huecos obliga a decidir algo antes de poder medir.
 
 Las siete tablas finales que consumen los análisis:
 
