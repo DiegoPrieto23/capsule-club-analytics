@@ -6,7 +6,39 @@
 
 ---
 
-## De qué va esto
+## About
+
+Proyecto de analítica de extremo a extremo sobre un negocio simulado de café en
+cápsulas. Cubre el recorrido completo: generación del dataset, modelado en dbt
+sobre DuckDB, seis análisis en Python y un informe HTML interactivo de siete
+páginas como entregable.
+
+**Qué hace, en cuatro piezas:**
+
+1. **Genera** un negocio sintético de tres años y 280.841 filas en doce tablas
+   —club de suscripción, tienda online, boutiques y venta de máquinas— con
+   defectos inyectados a propósito: roturas de stock, una semana de cobros
+   perdida, clientes duplicados y un canal de marketing que deja de ser medible
+   durante medio año.
+2. **Modela** ese dato en bruto hasta siete tablas analíticas, pasando por una
+   capa de limpieza y otra de lógica de negocio, con 220 comprobaciones
+   automáticas que se ejecutan en cada build.
+3. **Analiza** sobre esas tablas cuatro técnicas que se encadenan —series
+   temporales, forecasting validado contra el pasado, cohortes y RFM, y
+   atribución de marketing multimodelo— hasta el cruce que las cierra: CAC por
+   canal contra el LTV que ese canal acaba dejando.
+4. **Publica** un informe HTML estático de siete páginas: gráficos Plotly con su
+   tabla de datos debajo, modo claro y oscuro, y 25 recomendaciones, cada una
+   con la cifra que la sostiene.
+
+La pregunta que hilan los siete capítulos es una: **qué canal de captación
+conviene** cuando se mide por lo que el cliente acaba dejando y no por lo que
+cuesta traerlo. La respuesta cambia el orden del ranking.
+
+**Stack:** Python 3.13 · DuckDB · dbt · pandas · statsmodels · Plotly.
+Todo se ejecuta en local, sin servicios de pago.
+
+## El negocio simulado
 
 Capsule Club es una marca de café en cápsulas que no existe. Vende de cuatro
 formas a la vez: un club por suscripción que manda cápsulas cada mes, una tienda
@@ -23,18 +55,17 @@ qué, cuánto vale y con qué métrica se sabrá si funcionó.
 
 ## Qué pretende demostrar
 
-La parte que no es montar el *pipeline*: mirar los datos, encontrar lo que
-importa, comprobar que es verdad y contarlo de forma que alguien pueda decidir
-con ello.
-
-Un informe bonito lo hace cualquiera. La diferencia está en tres cosas:
+El foco no está en montar el *pipeline*, sino en lo que viene después: leer los
+datos, encontrar lo que importa, comprobar que es cierto y contarlo de forma que
+alguien pueda decidir con ello. Tres rasgos del proyecto sirven a eso:
 
 - **Los datos están rotos a propósito.** Hay roturas de stock que parecen falta
   de demanda, una semana de cobros perdida por una migración, suscripciones
   regaladas mezcladas con las de verdad, un canal de marketing que dejó de ser
   medible durante medio año y clientes duplicados por escribir el mismo email de
-  dos maneras. Nada de eso viene avisado. Detectarlo, medirlo y contarlo en el
-  informe —en vez de taparlo— es la mitad del trabajo.
+  dos maneras. Ninguna de esas anomalías viene señalada. Detectarlas, medir su
+  efecto y documentarlas en el informe —en vez de corregirlas en silencio— forma
+  parte del análisis.
 - **Cada conclusión se comprueba.** Las predicciones se ponen a prueba contra el
   pasado antes de publicarlas, y se dice cuánto se equivocan. Los rankings se
   recalculan cambiando los criterios para ver si aguantan.
@@ -53,22 +84,26 @@ Un informe bonito lo hace cualquiera. La diferencia está en tres cosas:
 | **Atribución** | A qué canal hay que darle el mérito de cada alta, y cuánto marketing no se puede atribuir a nadie |
 | **CAC × LTV** | Lo que cuesta captar un cliente contra lo que acaba dejando, canal por canal |
 
-Algunos de los hallazgos:
+### Algunos de los hallazgos
 
-- **El canal más barato no es el mejor.** El podcast capta suscriptores por
-  13,52 € y *paid social* por 14,44 €, pero el segundo retiene diez puntos mejor
-  al año y acaba valiendo más. Un cuadro de mando ordenado por coste recomienda
-  justo lo contrario de lo que conviene.
-- **El 39,4% del marketing no se puede atribuir a nadie.** No es gasto perdido:
-  es gasto que no se puede optimizar porque no se sabe a quién fue. Repartir
-  sólo lo atribuible abarata el coste real un 24%.
-- **Seis roturas de stock** dejaron sin vender 17.119 € de cápsulas, y tres de
-  ellas cayeron en los últimos siete meses. Si no se corrigen, la previsión
-  aprende de un cero que no era falta de interés y pide menos stock del necesario.
-- **El descuento de bienvenida cuesta 5,1 meses de vida del cliente.** No
-  fideliza: criba. Separa a quien iba a quedarse de quien venía por el descuento.
-- **274 cancelaciones fueron por un cobro fallido**, no por decisión del cliente.
-  Nadie intentó recuperarlas.
+- **El canal más barato no es el que más vale.** El podcast capta suscriptores
+  por 13,52 € y *paid social* por 14,44 €, pero el segundo retiene diez puntos
+  mejor al año y acaba dejando más (37,3x contra 33,7x). Ordenar los canales por
+  coste de captación da el orden inverso al de valor.
+- **El 39,4% del marketing no se puede atribuir a ninguna conversión.** No es
+  gasto perdido, pero tampoco optimizable: se desconoce a quién llegó. Cargar
+  ese gasto huérfano sobre las altas sube el CAC medio de 11,71 € a 14,53 €, y
+  no lo hace por igual en todos los canales —*paid social* sube un 44%—, así que
+  reordena el ranking.
+- **Seis roturas de stock** dejaron sin vender 17.119 € de cápsulas. Tres cayeron
+  en los últimos siete meses, justo en el arranque de la previsión: corregirlas
+  sube un 15,3% la demanda prevista de Intenso 10, porque el modelo estaba
+  leyendo como falta de interés un cero que era falta de existencias.
+- **El descuento de bienvenida acorta la vida del cliente en 5,1 meses** (16,7
+  frente a 21,8) y resta unos 128 € de LTV por alta. En vez de fidelizar,
+  selecciona: separa a quien iba a quedarse de quien venía por el descuento.
+- **274 cancelaciones se originan en un cobro fallido**, no en una decisión del
+  cliente, y no hay ningún intento de recuperación registrado.
 
 ## Los datos
 
@@ -203,11 +238,12 @@ erDiagram
     machine_orders       }o--o| stores                : "se hace en"
 ```
 
-Los extremos opcionales del diagrama son deliberados y son los que dan trabajo:
+Los extremos opcionales del diagrama son deliberados, y son los que dan trabajo:
 un pedido puede no tener cliente (compra en boutique sin fidelización, el 27,4%
 de los pedidos de tienda), un impacto de marketing puede no resolverse a nadie
 —el 39,4%— y un cliente puede no tener tienda de alta porque entró por internet.
-Cada uno de esos huecos obliga a decidir algo antes de poder medir.
+Cada uno de esos huecos obliga a tomar una decisión explícita antes de poder
+medir.
 
 Las siete tablas finales que consumen los análisis:
 
@@ -224,17 +260,17 @@ Las siete tablas finales que consumen los análisis:
 Cada tabla tiene sus comprobaciones automáticas: que no haya duplicados, que no
 falten campos obligatorios, que ninguna referencia apunte al vacío, que los
 importes cuadren. **220 comprobaciones en total**, y todas pasan en cada
-ejecución. Es lo que permite fiarse de que una anomalía en los datos es una
-anomalía de verdad y no un error del proceso.
+ejecución. Es lo que permite distinguir una anomalía real de los datos de un
+error del proceso.
 
 ## Qué se ha medido
 
 **Series temporales.** Tres series —suscriptores, ingresos y cápsulas por
-sabor— separadas en tendencia, estacionalidad y ruido. Resulta que el negocio
-tiene dos calendarios distintos: uno anual (agosto flojo, marzo fuerte) y otro
-semanal que sólo aparece en las altas, no en el número de clientes. Y que los
-dos sabores de temporada, que son el 9% del volumen, son los que deciden el
-calendario de compras del año.
+sabor— separadas en tendencia, estacionalidad y ruido. El negocio resulta tener
+dos calendarios distintos: uno anual (agosto flojo, marzo fuerte) y otro semanal
+que sólo aparece en las altas, no en el número de clientes. Y los dos sabores de
+temporada, que son el 9% del volumen, son los que deciden el calendario de
+compras del año.
 
 **Predicción.** Previsión a seis meses de las tres series, cada una con su banda
 de incertidumbre. Ninguna se publica sin haberla puesto antes a prueba contra el
@@ -248,7 +284,8 @@ comportan y no por cómo están en el catálogo.
 cuántos siguen y cuándo se van. Dos cosas que sólo se ven así: que los canales
 de captación parecen idénticos a los tres meses y no se separan hasta pasado el
 año, y que el hueco entre "clientes que siguen" y "dinero que sigue entrando" no
-lo abre el cambio de plan —que no pesa nada— sino las pausas.
+lo abre el cambio de plan —que no pesa nada— sino las pausas, que explican el
+102% de la diferencia.
 
 **Segmentación RFM.** Los compradores de tienda agrupados por cuándo compraron
 por última vez, cuántas veces y cuánto se gastaron. Los campeones son uno de
@@ -257,16 +294,16 @@ suscripción.
 
 **Atribución de marketing.** Cuatro formas de repartir el mérito entre canales:
 darle todo al primer contacto, todo al último, a partes iguales, y un modelo de
-Markov que mide cuánto caería la conversión si un canal desapareciera. La
-conclusión útil no es cuál gana, sino que los cuatro dan casi lo mismo mientras
-que el 39,4% del gasto no se puede asignar a nadie: elegir bien el modelo
-importa mucho menos que arreglar la medición.
+Markov que mide cuánto caería la conversión si un canal desapareciera. Los
+cuatro dan casi lo mismo —3,6 puntos de dispersión máxima y el mismo orden de
+canales— mientras que el 39,4% del gasto no se puede asignar a nadie: elegir
+bien el modelo importa mucho menos que arreglar la medición.
 
 **Coste contra valor.** El cierre: lo que cuesta captar un cliente por cada
-canal frente a lo que ese cliente acaba dejando. Con dos avisos incómodos —los
-ratios salen demasiado buenos porque faltan costes en la cuenta, y el podio
-cambia según qué criterio se use— porque publicar un número sin sus límites es
-peor que no publicarlo.
+canal frente a lo que ese cliente acaba dejando. Con dos salvedades que se
+publican junto al resultado: los ratios salen demasiado altos porque el dataset
+no tiene COGS y el LTV es ingreso, no margen; y el podio cambia según qué
+criterio se use, hasta un 66% en el ratio de un mismo canal.
 
 ## Cómo está hecho
 
@@ -285,7 +322,8 @@ datos.
 
 ### Ejecutarlo en local
 
-Necesita Python 3.13.
+Necesita Python 3.13. Los comandos son de Windows; en Linux o macOS, cambiar
+`venv\Scripts\` por `venv/bin/`.
 
 ```bash
 python -m venv venv
@@ -298,17 +336,24 @@ venv\Scripts\python data_generation\generate_synthetic_data.py
 cd dbt_project
 ..\venv\Scripts\dbt build --profiles-dir .
 
-# 3. Reconstruir el informe (los análisis ya dejan sus resultados guardados)
+# 3. Reconstruir el informe
 cd ..
 venv\Scripts\python report\build_report.py
 ```
 
-El informe queda en `report/dist/index.html`.
+El informe queda en `report/dist/index.html`, y esa carpeta va versionada: es el
+entregable, y el workflow de GitHub Actions la publica en Pages tal cual, sin
+reconstruir nada.
+
+El paso 3 lee los resultados de `analysis/outputs/*.json`, que **no** están
+versionados por ser regenerables. En una copia recién clonada hay que ejecutar
+antes los seis cuadernos de `analysis/`, cada uno de los cuales deja ahí su
+salida.
 
 ### Dónde está cada cosa
 
 ```
-data_generation/   el script que inventa el negocio
+data_generation/   generador del dataset sintético
 dbt_project/       las transformaciones y sus comprobaciones
 analysis/          seis cuadernos, uno por análisis
 report/            el generador del informe HTML
