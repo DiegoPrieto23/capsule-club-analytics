@@ -18,7 +18,9 @@ Uso:
 from __future__ import annotations
 
 import json
+import os
 import random
+import shutil
 import sys
 from bisect import bisect_left
 from dataclasses import dataclass, field
@@ -102,6 +104,10 @@ P_SHARED_CODE_IN_WINDOW = 0.35   # uso del código compartido dentro de su venta
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 DUCKDB_PATH = PROJECT_ROOT / "data" / "warehouse.duckdb"
+# Todo se escribe primero aquí y se publica al final con os.replace (ver publish()),
+# para que un fallo a mitad no deje el warehouse mezclando tablas de dos generaciones.
+STAGING_DIR = RAW_DIR / ".staging"
+STAGING_DUCKDB_PATH = DUCKDB_PATH.with_name("warehouse.staging.duckdb")
 
 # =============================================================================
 # ESTADO ALEATORIO Y CONTADORES
@@ -1292,22 +1298,47 @@ def normalize(df: pd.DataFrame) -> pd.DataFrame:
     return out.loc[:, [c for c in out.columns if not c.startswith("_")]]
 
 
+def _remove_duckdb(path: Path) -> None:
+    """Borra un fichero DuckDB y su WAL, si existen."""
+    for p in (path, path.with_name(path.name + ".wal")):
+        p.unlink(missing_ok=True)
+
+
 def persist(tables: dict[str, pd.DataFrame]) -> dict[str, int]:
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    """Escribe parquet y un DuckDB nuevo en la zona de staging; publish() los publica.
+
+    El DuckDB se crea desde cero en vez de hacer CREATE OR REPLACE sobre el que ya
+    existe: así no arrastra modelos de dbt de una generación anterior y un fallo a
+    mitad deja intacto el warehouse publicado.
+    """
+    if STAGING_DIR.exists():
+        shutil.rmtree(STAGING_DIR)
+    STAGING_DIR.mkdir(parents=True)
+    _remove_duckdb(STAGING_DUCKDB_PATH)
     counts = {}
 
-    con = duckdb.connect(str(DUCKDB_PATH))
+    con = duckdb.connect(str(STAGING_DUCKDB_PATH))
     try:
         for name, df in tables.items():
             df = normalize(df)
             counts[name] = len(df)
-            df.to_parquet(RAW_DIR / f"{name}.parquet", index=False)
+            df.to_parquet(STAGING_DIR / f"{name}.parquet", index=False)
             con.register("tmp_df", df)
-            con.execute(f"CREATE OR REPLACE TABLE raw_{name} AS SELECT * FROM tmp_df")
+            con.execute(f"CREATE TABLE raw_{name} AS SELECT * FROM tmp_df")
             con.unregister("tmp_df")
     finally:
         con.close()
     return counts
+
+
+def publish() -> None:
+    """Mueve lo generado en staging a su sitio. El DuckDB va el último y de una vez."""
+    for path in STAGING_DIR.iterdir():
+        os.replace(path, RAW_DIR / path.name)
+    STAGING_DIR.rmdir()
+    # Un WAL huérfano del warehouse anterior se aplicaría sobre el nuevo al abrirlo.
+    DUCKDB_PATH.with_name(DUCKDB_PATH.name + ".wal").unlink(missing_ok=True)
+    os.replace(STAGING_DUCKDB_PATH, DUCKDB_PATH)
 
 
 # =============================================================================
@@ -1456,7 +1487,6 @@ def main() -> None:
     }
 
     counts = persist(tables)
-    print("  · parquet + DuckDB escritos")
 
     relaunches = [
         {"flavor": f, "old_sku": tl.versions[0][0], "new_sku": tl.versions[1][0],
@@ -1484,8 +1514,11 @@ def main() -> None:
         "stockouts": stockouts,
         "sku_relaunches": relaunches,
     }
-    (RAW_DIR / "_imperfections_manifest.json").write_text(
+    (STAGING_DIR / "_imperfections_manifest.json").write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    publish()
+    print("  · parquet + DuckDB escritos")
 
     print_summary(counts, extra)
 

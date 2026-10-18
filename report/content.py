@@ -68,20 +68,24 @@ def build(data, fmt, Figure, table):
     best_channel = max(cx["crossover"], key=lambda r: r["ratio"])
     cheapest = min(cx["crossover"], key=lambda r: r["cac_loaded_eur"])
 
-    subs_fc = subs["forecast"]["models"]["cohortes"]
-    subs_last = subs["series"]["active_net"][-1]["suscriptores"]
-    subs_growth = subs_fc["yhat"][-1] / subs_last - 1
-    ing_fc = ing["forecast"]["models"]["sarima_airline"]
+    # Crecimiento interanual: último mes frente al mismo mes del año anterior, o los
+    # últimos doce meses frente a los doce previos cuando se suma un flujo.
+    def last_12(rows, key):
+        return sum(r[key] for r in rows[-12:])
+
+    def prev_12(rows, key):
+        return sum(r[key] for r in rows[-24:-12])
+
+    subs_series = subs["series"]["active_net"]
+    subs_last = subs_series[-1]["suscriptores"]
+    subs_yoy = subs_last / subs_series[-13]["suscriptores"] - 1
+    signups_12m = last_12(subs["series"]["signups"], "altas")
     ing_last = ing["series"]["total"][-1]["eur"]
-    cap_fc = cap["forecast"]["total"]
-
-    def mape(rows, exclude_naive=True):
-        pool = [r for r in rows if not exclude_naive or r["model"] != "naive_estacional"]
-        return min(pool, key=lambda r: r["mase"])["mape"]
-
-    mape_subs = mape(subs["backtest"]["leaderboard"])
-    mape_ing = mape(ing["backtest"]["leaderboard"])
-    mape_cap = mape(cap["backtest"]["total_leaderboard"])
+    ing_12m = last_12(ing["series"]["total"], "eur")
+    ing_yoy = ing_12m / prev_12(ing["series"]["total"], "eur") - 1
+    cap_12m = last_12(cap["series"]["total"], "units")
+    cap_yoy = cap_12m / prev_12(cap["series"]["total"], "units") - 1
+    seasonal_share = sum(f["share_pct"] for f in cap["flavors"] if f["is_seasonal"])
 
 
     # --- tablas equivalentes -----------------------------------------------
@@ -91,29 +95,14 @@ def build(data, fmt, Figure, table):
     def _months(rows, key="date"):
         return [month_es(r[key]) for r in rows]
 
-    def _forecast_table(hist, model, months, unit, value_key):
-        header = ["Mes", unit, "Tipo"]
-        rows = [[month_es(r["date"]), num(r[value_key]), "histórico"] for r in hist]
-        rows += [[month_es(m), num(y), "previsión"]
-                 for m, y in zip(months, model["yhat"])]
-        return table(header, rows)
-
     FLAVOUR = {f["flavor"]: f["label"] for f in cap["flavors"]}
     CHANNEL_LABEL = T.CHANNEL_LABEL
 
     TBL = {}
 
-    TBL["resumen-forecast-subs"] = _forecast_table(
-        subs["series"]["active_net"], subs_fc, subs["forecast"]["months"],
-        "Suscriptores activos", "suscriptores")
-    TBL["resumen-backtest"] = table(
-        ["Serie", "Modelo publicado (MAPE)", "Repetir el año anterior (MAPE)"],
-        [[name,
-          pct(mape(rows)),
-          pct(next(r for r in rows if r["model"] == "naive_estacional")["mape"])]
-         for name, rows in (("Suscriptores", subs["backtest"]["leaderboard"]),
-                            ("Ingresos", ing["backtest"]["leaderboard"]),
-                            ("Demanda de cápsulas", cap["backtest"]["total_leaderboard"]))])
+    TBL["subs-history"] = table(
+        ["Mes", "Suscriptores activos"],
+        [[month_es(r["date"]), num(r["suscriptores"])] for r in subs_series])
     _ing_ch = ["suscripcion", "online", "tienda", "maquina"]
     TBL["resumen-ingresos"] = table(
         ["Mes", "Suscripción", "Tienda online", "Boutique", "Máquinas", "Total"],
@@ -121,9 +110,6 @@ def build(data, fmt, Figure, table):
          + [eur(ing["series"][c][i]["eur"]) for c in _ing_ch]
          + [eur(ing["series"]["total"][i]["eur"])]
          for i in range(len(ing["series"]["total"]))])
-    TBL["ing-forecast"] = _forecast_table(
-        ing["series"]["total"], ing_fc, ing["forecast"]["months"],
-        "Ingreso (€)", "eur")
     TBL["ing-mix"] = table(
         ["Mes", "Suscripción", "Tienda online", "Boutique", "Máquinas"],
         [[month_es(r["date"]), pct(r["suscripcion"]), pct(r["online"]),
@@ -133,9 +119,6 @@ def build(data, fmt, Figure, table):
         ["Mes", "Caja cobrada / MRR contratado"],
         [[month_es(r["date"]), num(r["ratio"], 3)]
          for r in ing["payment_gap"]["cash_ratio"]])
-    TBL["cap-forecast"] = _forecast_table(
-        cap["series"]["total"], cap_fc, cap["forecast"]["months"],
-        "Unidades", "units")
     TBL["cap-emphasis"] = table(
         ["Mes"] + [FLAVOUR[f] for f in cap["series"]["by_flavor"]],
         [[month_es(cap["series"]["by_flavor"]["classic_espresso"][i]["date"])]
@@ -195,8 +178,8 @@ def build(data, fmt, Figure, table):
         "eyebrow": "Capsule Club · informe de negocio",
         "title": "Resumen ejecutivo",
         "summary": ("Tres años de un club de cápsulas por suscripción, con tienda online, "
-                    "boutiques y venta de máquinas. Seis análisis encadenados, una previsión "
-                    "a seis meses y un plan de acción con lo que conviene cambiar."),
+                    "boutiques y venta de máquinas. Seis análisis encadenados y un plan de "
+                    "acción con lo que conviene cambiar."),
         "hero": {"value": eur(ing["meta"]["total_revenue_eur"]),
                  "label": "ingreso acumulado del histórico, en cuatro canales",
                  "note": f"{month_es(ing['meta']['history_start'])} – "
@@ -204,9 +187,8 @@ def build(data, fmt, Figure, table):
         "kpis": [
             {"label": "Suscriptores activos", "value": num(subs_last),
              "note": "netos de pausas, último mes"},
-            {"label": "Previsión a 6 meses", "value": num(subs_fc["yhat"][-1]),
-             "note": f"{pct(subs_growth * 100, 0)} más, con un error medido del "
-                     f"{pct(mape_subs)}"},
+            {"label": "Crecimiento interanual", "value": pct(subs_yoy * 100, 0),
+             "note": "suscriptores activos frente al mismo mes del año anterior"},
             {"label": "CAC cargado", "value": eur(blended["cac_loaded_eur"], 2),
              "note": "incluye el gasto que no se puede asignar"},
             {"label": "LTV por suscriptor", "value": eur(blended["ltv_weighted_eur"]),
@@ -216,36 +198,24 @@ def build(data, fmt, Figure, table):
             {"label": "Valor recuperable", "value": eur(involuntary_value + cens["lost_demand"]["eur"]),
              "note": "al año, sólo con los dos primeros puntos del plan"},
         ],
-        "glossary": entries(["ltv", "cac", "payback", "mape", "churn"]),
+        "glossary": entries(["ltv", "cac", "payback", "churn", "pausa"]),
         "sections": [
-            {"heading": "Lo que viene",
+            {"heading": "Cómo ha crecido la base",
              "blocks": [{"kind": "p", "html": rich(
-                 "Las tres series del negocio tienen previsión a seis meses y, más "
-                 "importante, **una medida de cuánto se equivoca**. La de suscriptores "
-                 f"falla un {pct(mape_subs)} de media en [[backtesting]] contra el pasado; "
-                 f"la de ingresos un {pct(mape_ing)} y la de cápsulas un {pct(mape_cap)}. "
-                 "Todas baten con holgura al suelo de referencia —repetir lo que pasó el "
-                 "año anterior—, que es lo que hace que se puedan usar para planificar y "
-                 "no sólo para enseñar.")}],
+                 f"El club cierra {month_es(subs_series[-1]['date'])} con "
+                 f"{num(subs_last)} suscriptores activos, un {pct(subs_yoy * 100, 0)} más que "
+                 f"un año antes, y en los últimos doce meses se han dado de alta "
+                 f"{num(signups_12m)}. La base crece todos los meses salvo al final del "
+                 "verano, cuando las [[pausa|pausas]] la retiran de la cuenta durante unas "
+                 "semanas: no son bajas, y en otoño vuelven.")}],
              "figures": [
-                 Figure("resumen-forecast-subs", F.subscribers_forecast, subs,
-                        "Suscriptores activos: histórico y previsión",
-                        "Serie mensual de suscriptores activos con previsión a seis meses y "
-                        "banda de incertidumbre del 80%.",
-                        subtitle=f"El modelo de cohortes cierra el semestre en "
-                                 f"{num(subs_fc['yhat'][-1])} suscriptores, un "
-                                 f"{pct(subs_growth * 100, 0)} sobre hoy.",
-                        source="Fuente: fct_subscriptions_monthly.", table=TBL["resumen-forecast-subs"]),
-                 Figure("resumen-backtest", F.backtest_quality,
-                        [("Suscriptores", subs["backtest"]["leaderboard"]),
-                         ("Ingresos", ing["backtest"]["leaderboard"]),
-                         ("Demanda de cápsulas", cap["backtest"]["total_leaderboard"])],
-                        "Cuánto se equivoca cada previsión",
-                        "Barras comparando el error del modelo publicado con el de repetir "
-                        "el año anterior, para las tres series.",
-                        subtitle="Error medio a seis meses, medido tapando el final del "
-                                 "histórico y pronosticando a ciegas.",
-                        source="Fuente: backtesting walk-forward, 5 pliegues.", table=TBL["resumen-backtest"])]},
+                 Figure("resumen-subs", F.subscribers_history, subs,
+                        "Suscriptores activos, mes a mes",
+                        "Serie mensual de suscriptores activos netos de pausas.",
+                        subtitle="Netos de pausas: es la única de las tres definiciones de "
+                                 "activo en la que se ve el valle de verano.",
+                        source="Fuente: fct_subscriptions_monthly.", width="full",
+                        table=TBL["subs-history"])]},
             {"heading": "De dónde sale el dinero",
              "blocks": [{"kind": "p", "html": rich(
                  "Ningún canal domina. La suscripción aporta el "
@@ -308,11 +278,12 @@ def build(data, fmt, Figure, table):
                  "impact": "el techo de crecimiento sube, no el coste unitario",
                  "owner": "Marketing", "effort": "medio",
                  "measure": "CAC marginal a cada escalón de presupuesto"},
-                {"do": "Fijar stock de seguridad por sabor con el extremo alto de la previsión.",
+                {"do": "Fijar stock de seguridad por sabor con la demanda de su mes pico, no "
+                       "con la media.",
                  "why": (f"Seis roturas de stock dejaron sin vender "
                          f"{eur(cens['lost_demand']['eur'])} de demanda real, y tres de ellas "
                          "cayeron en los últimos siete meses. Los sabores afectados son los "
-                         "de base, que son los más fáciles de prever."),
+                         "de base, que son los de calendario más regular."),
                  "impact": f"unos {eur(cens['lost_demand']['eur'])} al año de venta recuperable",
                  "owner": "Operaciones", "effort": "bajo",
                  "measure": "días de rotura por sabor y mes"},
@@ -347,49 +318,44 @@ def build(data, fmt, Figure, table):
         "nav_title": "Suscriptores activos",
         "eyebrow": "Serie temporal · 1 de 3",
         "title": "Suscriptores activos",
-        "summary": ("Cuántos hay, cuántos habrá dentro de seis meses y con cuánto margen de "
-                    "error. Con las pausas tratadas como lo que son —una parada, no una "
-                    "baja— y el fallo de cobro separado de la decisión del cliente."),
-        "hero": {"value": num(subs_fc["yhat"][-1]),
-                 "label": f"suscriptores activos previstos para "
-                          f"{month_es(subs['forecast']['months'][-1])}",
-                 "note": f"un {pct(subs_growth * 100, 0)} sobre los {num(subs_last)} de hoy · "
-                         f"error medio del modelo {pct(mape_subs)}"},
+        "summary": ("Cuántos hay, cómo ha crecido la base y dónde está su estacionalidad. Con "
+                    "las pausas tratadas como lo que son —una parada, no una baja— y el fallo "
+                    "de cobro separado de la decisión del cliente."),
+        "hero": {"value": num(subs_last),
+                 "label": f"suscriptores activos netos de pausas en "
+                          f"{month_es(subs_series[-1]['date'])}",
+                 "note": f"un {pct(subs_yoy * 100, 0)} más que un año antes"},
         "kpis": [
-            {"label": "Activos al cierre", "value": num(subs_last),
-             "note": "netos de pausas"},
-            {"label": "Error de la previsión", "value": pct(mape_subs),
-             "note": "frente al 43,7% de repetir el año anterior"},
+            {"label": "Crecimiento interanual", "value": pct(subs_yoy * 100, 0),
+             "note": "frente al mismo mes del año anterior"},
+            {"label": "Altas en 12 meses", "value": num(signups_12m),
+             "note": "suscripciones nuevas del último año"},
             {"label": "Pausa en agosto", "value": pct(pause_rate["pct_paused"]),
              "note": "de la base, media de los tres agostos; vuelve en otoño"},
             {"label": "Bajas por fallo de cobro", "value": num(involuntary),
              "note": "en tres años; no las decidió el cliente"},
         ],
-        "glossary": entries(["cohorte", "retencion", "churn", "pausa", "backtesting",
-                             "mape", "estacionalidad"]),
+        "glossary": entries(["churn", "pausa", "estacionalidad"]),
         "sections": [
-            {"heading": "Cuántos habrá y cuánto nos podemos fiar",
+            {"heading": "Cuántos hay y cómo ha crecido la base",
              "blocks": [{"kind": "p", "html": rich(
-                 "La previsión no extrapola la línea del total: descompone la base en "
-                 "[[cohorte|cohortes]] vivas y aplica a cada una su [[retencion|curva de "
-                 "retención]], que es lo que permite anticipar que un mes con muchas altas "
-                 "recientes se comportará distinto a uno con base madura. El "
-                 f"[[backtesting]] la deja en un {pct(mape_subs)} de error medio a seis "
-                 "meses, unas trece veces mejor que el suelo de referencia.")},
+                 f"La base cierra el histórico en {num(subs_last)} suscriptores activos, un "
+                 f"{pct(subs_yoy * 100, 0)} más que un año antes. El crecimiento es continuo "
+                 "salvo en un tramo del año: al final del verano la serie se hunde y en "
+                 "otoño recupera, porque las [[pausa|pausas]] retiran de la cuenta a quien "
+                 "sigue siendo cliente.")},
                  {"kind": "p", "html": rich(
                      "La serie se mide sobre activos **netos de [[pausa|pausas]]**, que es "
                      "la única de las tres definiciones disponibles en la que se ve el "
                      "verano. Las otras dos cuentan como activo a quien está de pausa, y "
                      "entonces agosto simplemente no existe.")}],
              "figures": [
-                 Figure("subs-forecast", F.subscribers_forecast, subs,
-                        "Suscriptores activos y previsión a seis meses",
-                        "Serie mensual de suscriptores activos con previsión y banda del 80%.",
-                        subtitle="La banda es el 80% de confianza: cuatro de cada cinco "
-                                 "meses deberían caer dentro.",
-                        table=table(["Mes", "Activos"],
-                                    [[month_es(r["date"]), num(r["suscriptores"])]
-                                     for r in subs["series"]["active_net"][-18:]]),
+                 Figure("subs-history", F.subscribers_history, subs,
+                        "Suscriptores activos, mes a mes",
+                        "Serie mensual de suscriptores activos netos de pausas.",
+                        subtitle="Cada final de verano la serie se hunde y en otoño "
+                                 "recupera: son pausas, no bajas.",
+                        table=TBL["subs-history"],
                         source="Fuente: fct_subscriptions_monthly."),
                  Figure("subs-weekday", F.signup_weekday, subs,
                         "Qué día de la semana entra la gente",
@@ -426,14 +392,6 @@ def build(data, fmt, Figure, table):
                            "pausa un mes la libera antes",
                  "owner": "Producto", "effort": "medio",
                  "measure": "duración media de la pausa y tasa de retorno"},
-                {"do": "Usar la previsión para dimensionar compras y atención, no sólo para "
-                       "informar.",
-                 "why": (f"Con un error medido del {pct(mape_subs)} a seis meses, la "
-                         "previsión es lo bastante buena para planificar inventario y "
-                         "plantilla. Hoy no se usa para eso."),
-                 "impact": "menos sobrestock y menos picos de carga sin cubrir",
-                 "owner": "Operaciones", "effort": "bajo",
-                 "measure": "desviación entre previsión y real cada mes"},
             ]},
         "takeaways": subs["insights"][:4],
     })
@@ -444,46 +402,38 @@ def build(data, fmt, Figure, table):
         "slug": "ingresos", "file": "02-ingresos.html", "nav_title": "Ingresos totales",
         "eyebrow": "Serie temporal · 2 de 3",
         "title": "Ingresos totales",
-        "summary": ("El ingreso de los cuatro canales, su previsión a seis meses y la "
+        "summary": ("El ingreso de los cuatro canales, cómo cambia su reparto y la "
                     "imperfección que sólo aparece si se elige bien el denominador: una "
                     "semana sin datos de cobro a mitad del histórico."),
-        "hero": {"value": eur(sum(ing_fc["yhat"])),
-                 "label": "ingreso previsto para los próximos seis meses",
-                 "note": f"banda del 80%: {eur(sum(ing_fc['yhat_lower']))} – "
-                         f"{eur(sum(ing_fc['yhat_upper']))} · error medio {pct(mape_ing)}"},
+        "hero": {"value": eur(ing_12m),
+                 "label": "ingreso de los últimos doce meses, en cuatro canales",
+                 "note": f"un {pct(ing_yoy * 100, 0)} más que los doce meses anteriores"},
         "kpis": [
             {"label": "Ingreso acumulado", "value": eur(ing["meta"]["total_revenue_eur"]),
              "note": "tres años, cuatro canales"},
             {"label": "Último mes", "value": eur(ing_last),
              "note": month_es(ing["meta"]["history_end"])},
-            {"label": "Error de la previsión", "value": pct(mape_ing),
-             "note": "frente al 50,7% de repetir el año anterior"},
+            {"label": "Crecimiento interanual", "value": pct(ing_yoy * 100, 0),
+             "note": "últimos doce meses frente a los doce anteriores"},
             {"label": "Hueco de cobro", "value": month_es(gapm["detected_month"]),
              "note": f"la caja cae un {pct(gapm['drop_vs_median_pct'])} sin que baje el MRR"},
         ],
-        "glossary": entries(["mrr", "estacionalidad", "mape", "backtesting"]),
+        "glossary": entries(["mrr", "estacionalidad"]),
         "sections": [
-            {"heading": "Cuánto entrará y por qué canal",
+            {"heading": "Cuánto entra y por qué canal",
              "blocks": [{"kind": "p", "html": rich(
                  "De las tres medidas de ingreso disponibles se usa la devengada, que es la "
                  "única que representa servicio prestado. La caja cobrada acusa problemas de "
                  "cobro que no son problemas de negocio, y el [[mrr]] contratado es una "
                  "tarifa vigente, no un ingreso.")}],
              "figures": [
-                 Figure("ing-forecast", F.revenue_forecast, ing,
-                        "Ingreso total y previsión a seis meses",
-                        "Serie mensual del ingreso total con previsión y banda del 80%.",
-                        subtitle=f"Cierra el semestre en {eur(ing_fc['yhat'][-1])} al mes.",
-                        source="Fuente: los tres marts de hechos.", table=TBL["ing-forecast"]),
                  Figure("ing-stack", F.revenue_stack, ing,
                         "Ingreso mensual por canal",
                         "Área apilada del ingreso por canal.",
                         subtitle="La suscripción arranca siendo casi todo y va cediendo peso "
                                  "a medida que maduran catálogo y boutiques.",
-                        table=table(["Mes", "Total"],
-                                    [[month_es(r["date"]), eur(r["eur"])]
-                                     for r in ing["series"]["total"][-18:]]),
-                        source="Fuente: los tres marts de hechos."),
+                        table=TBL["resumen-ingresos"],
+                        source="Fuente: los tres marts de hechos.", width="full"),
                  Figure("ing-mix", F.channel_mix, ing,
                         "Cómo cambia el reparto entre canales",
                         "Área apilada en porcentaje del ingreso de cada mes por canal.",
@@ -510,14 +460,6 @@ def build(data, fmt, Figure, table):
                  "impact": "detecta en 24 h lo que tardó meses en aparecer",
                  "owner": "Datos / Finanzas", "effort": "bajo",
                  "measure": "alertas disparadas y falsos positivos"},
-                {"do": "Planificar tesorería con la previsión y su banda, no con el último mes.",
-                 "why": (f"La previsión de ingresos se equivoca un {pct(mape_ing)} de media a "
-                         "seis meses y publica banda, así que permite planificar con un "
-                         "rango en vez de con un número."),
-                 "impact": f"rango de {eur(sum(ing_fc['yhat_lower']))} a "
-                           f"{eur(sum(ing_fc['yhat_upper']))} para el semestre",
-                 "owner": "Finanzas", "effort": "bajo",
-                 "measure": "desviación mensual frente a la banda"},
                 {"do": "Dimensionar la plantilla de boutique con su propio calendario.",
                  "why": ("La boutique es el canal más estacional del negocio y la "
                          "suscripción el menos, y además hacen techo en meses distintos. "
@@ -535,13 +477,12 @@ def build(data, fmt, Figure, table):
         "slug": "capsulas", "file": "03-capsulas.html", "nav_title": "Demanda por sabor",
         "eyebrow": "Serie temporal · 3 de 3",
         "title": "Demanda por sabor de cápsula",
-        "summary": ("Doce sabores, dos ritmos de demanda muy distintos y una previsión por "
-                    "sabor para comprar con criterio. Con las roturas de stock detectadas y "
-                    "descontadas, porque si no la previsión pide de menos."),
-        "hero": {"value": num(sum(cap_fc["yhat"])),
-                 "label": "cápsulas previstas para los próximos seis meses",
-                 "note": f"banda del 80%: {num(sum(cap_fc['yhat_lower']))} – "
-                         f"{num(sum(cap_fc['yhat_upper']))} · error medio {pct(mape_cap)}"},
+        "summary": ("Doce sabores y dos ritmos de demanda muy distintos, que son el "
+                    "calendario de compras. Con las roturas de stock detectadas y "
+                    "descontadas, porque si no la demanda real parece menor de lo que es."),
+        "hero": {"value": num(cap_12m),
+                 "label": "cápsulas vendidas en los últimos doce meses, club y tienda",
+                 "note": f"un {pct(cap_yoy * 100, 0)} más que los doce meses anteriores"},
         "kpis": [
             {"label": "Unidades del histórico", "value": num(cap["meta"]["total_units"]),
              "note": "club + tienda, doce sabores"},
@@ -549,10 +490,10 @@ def build(data, fmt, Figure, table):
              "note": f"de {cens['detection']['n_runs_tested']} candidatas, sin falsos positivos"},
             {"label": "Venta perdida", "value": eur(cens["lost_demand"]["eur"]),
              "note": "demanda real que no se pudo servir"},
-            {"label": "Error de la previsión", "value": pct(mape_cap),
-             "note": "frente al 52,5% de repetir el año anterior"},
+            {"label": "Peso de la temporada", "value": pct(seasonal_share),
+             "note": "del volumen, en los dos sabores de temporada"},
         ],
-        "glossary": entries(["censura", "estacionalidad", "mape", "backtesting"]),
+        "glossary": entries(["censura", "estacionalidad"]),
         "sections": [
             {"heading": "Dos ritmos, no doce series",
              "blocks": [{"kind": "p", "html": rich(
@@ -563,18 +504,15 @@ def build(data, fmt, Figure, table):
                  "calendario de compras, porque su [[estacionalidad]] llega a multiplicar "
                  "por veintisiete entre su mejor y su peor mes.")}],
              "figures": [
-                 Figure("cap-forecast", F.capsule_forecast, cap,
-                        "Demanda total de cápsulas y previsión",
-                        "Serie mensual de unidades con previsión a seis meses y banda del 80%.",
-                        subtitle="Es la cifra con la que se compra: unidades, no euros, para "
-                                 "que un cambio de precio no la contamine.",
-                        source="Fuente: fct_shipments + fct_shop_orders.", table=TBL["cap-forecast"]),
                  Figure("cap-emphasis", F.flavour_emphasis, cap,
                         "Los dos sabores de temporada frente a los diez de base",
                         "Líneas de demanda mensual por sabor, con los estacionales "
                         "destacados y el resto en gris.",
-                        subtitle="Calabaza hace techo en octubre y jengibre en diciembre.",
-                        source="Fuente: agregado por sabor.", table=TBL["cap-emphasis"]),
+                        subtitle="En unidades, no euros, para que un cambio de precio no "
+                                 "contamine la serie. Calabaza hace techo en octubre y "
+                                 "jengibre en diciembre.",
+                        source="Fuente: agregado por sabor.", width="full",
+                        table=TBL["cap-emphasis"]),
                  Figure("cap-heatmap", F.seasonal_heatmap, cap,
                         "Cuándo se vende cada sabor",
                         "Mapa de calor del índice de demanda sobre tendencia por sabor y mes.",
@@ -596,22 +534,21 @@ def build(data, fmt, Figure, table):
         ],
         "actions": {
             "steps": [
-                {"do": "Fijar el stock de seguridad de cada sabor con el extremo alto de su "
-                       "previsión, no con la media.",
+                {"do": "Fijar el stock de seguridad de cada sabor con la demanda de su mes "
+                       "pico, no con la media.",
                  "why": (f"Las seis roturas costaron {eur(cens['lost_demand']['eur'])} de "
                          "venta que sí existía, y cayeron sobre sabores de base, que son los "
-                         "más predecibles del catálogo. Comprar contra la media garantiza "
-                         "quedarse corto la mitad de los meses."),
+                         "de calendario más regular del catálogo. Comprar contra la media "
+                         "garantiza quedarse corto la mitad de los meses."),
                  "impact": f"unos {eur(cens['lost_demand']['eur'])} al año de venta recuperable",
                  "owner": "Operaciones / Compras", "effort": "bajo",
                  "measure": "días de rotura por sabor y nivel de servicio"},
                 {"do": "Cerrar la compra de los sabores de temporada con seis meses de "
-                       "antelación y asumir una banda ancha.",
-                 "why": ("Calabaza concentra su año en octubre y jengibre en diciembre. La "
-                         "previsión los sitúa con medio año de margen, pero con mucha menos "
-                         "precisión que los de base porque cada uno tiene una sola campaña "
-                         "completa en el histórico. Es una decisión de cuánto sobrestock se "
-                         "acepta, no un problema de modelo."),
+                       "antelación y un margen generoso.",
+                 "why": ("Calabaza concentra su año en octubre y jengibre en diciembre, así "
+                         "que el calendario se conoce con medio año de margen. Lo que no se "
+                         "conoce bien es el volumen: cada uno tiene una sola campaña completa "
+                         "en el histórico. Es una decisión de cuánto sobrestock se acepta."),
                  "impact": "evita quedarse sin el producto que más margen deja en su pico",
                  "owner": "Compras", "effort": "medio",
                  "measure": "cobertura en el mes pico y sobrante en enero"},

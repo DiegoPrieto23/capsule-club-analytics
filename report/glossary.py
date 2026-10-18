@@ -90,24 +90,11 @@ GLOSSARY: dict[str, dict[str, str]] = {
                        "desapareciera. A diferencia de dar el mérito al primer o al último "
                        "contacto, reparte por contribución y no por posición."),
     },
-    "backtesting": {
-        "name": "Backtesting",
-        "definition": ("Poner a prueba una previsión con el pasado: se tapa el último tramo "
-                       "del histórico, se pronostica a ciegas y se compara con lo que de "
-                       "verdad pasó. Es lo único que permite decir si una previsión es "
-                       "creíble antes de usarla."),
-    },
-    "mape": {
-        "name": "MAPE",
-        "definition": ("El error medio de una previsión, en porcentaje. Un MAPE del 3% "
-                       "significa que, de media, la previsión se equivoca un 3% respecto a "
-                       "lo que acabó ocurriendo."),
-    },
     "censura": {
         "name": "Demanda censurada",
         "definition": ("Ventas que no ocurrieron porque no había producto, no porque nadie "
                        "lo quisiera. En los datos las dos cosas son un cero idéntico, y "
-                       "confundirlas hace que la previsión pida menos stock del necesario."),
+                       "confundirlas hace que la demanda real parezca menor y se compre menos stock del necesario."),
     },
     "payback": {
         "name": "Payback",

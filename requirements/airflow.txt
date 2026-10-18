@@ -1,0 +1,5 @@
+# Entorno de Airflow dentro de la imagen de Astro: sólo lo imprescindible.
+# dbt y el stack de análisis viven en sus propios venvs (ver Dockerfile), para
+# que sus dependencias no choquen con las de Airflow.
+# No poner apache-airflow aquí: la versión la fija la etiqueta de la imagen.
+astronomer-cosmos>=1.15,<2

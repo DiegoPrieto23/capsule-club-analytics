@@ -1,0 +1,13 @@
+# Conexiones, pools y variables de Airflow para desarrollo local (sólo Astro CLI,
+# se cargan al hacer `astro dev start`). Aquí no hay secretos: el pipeline no usa
+# conexiones (dbt lee su propio profiles.yml).
+# Docs: https://www.astronomer.io/docs/astro/cli/develop-project#configure-airflow_settingsyaml-local-development-only
+
+airflow:
+  connections: []
+  pools:
+    # Máximo de notebooks a la vez en el grupo analysis (ver dags/capsule_club_pipeline.py).
+    - pool_name: analysis_notebooks
+      pool_slot: 3
+      pool_description: "Notebooks de analysis en paralelo; con cinco a la vez DuckDB se quedaba sin memoria"
+  variables: []

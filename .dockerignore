@@ -1,0 +1,33 @@
+# Contexto de build de la imagen de Airflow (Astro CLI).
+
+# Entornos y control de versiones
+venv/
+.venv/
+.git/
+**/__pycache__/
+**/.ipynb_checkpoints/
+
+# Artefactos de dbt
+dbt_project/target/
+dbt_project/logs/
+dbt_project/dbt_packages/
+
+# Lo que escribe el DAG: llega por los volúmenes de docker-compose.override.yml,
+# así que hornearlo sólo engordaría la imagen con una copia que queda tapada.
+data/
+analysis/outputs/
+report/dist/
+dashboard/data/
+
+# Del proyecto Astro, que no debe entrar en la imagen
+astro
+.env
+airflow_settings.yaml
+logs/
+airflow.db
+airflow.cfg
+
+# No hacen falta para ejecutar nada
+img/
+_to_delete/
+.github/

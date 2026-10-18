@@ -4,7 +4,7 @@ Páginas, en este orden:
 
 1. **Resumen ejecutivo** — KPIs de negocio clave (suscriptores activos, MRR, ingresos totales, tasa de cancelación, CAC medio, LTV medio) y las 2-3 conclusiones más importantes del proyecto en un vistazo.
 
-2. **Serie temporal: Suscriptores activos** — descomposición (tendencia/estacionalidad/residuo) del stock mensual de activos, y forecast a N meses con backtesting walk-forward. Debe mostrar también el enfoque de forecasting basado en curvas de retención por cohorte, no solo un modelo clásico ciego sobre el agregado.
+2. **Serie temporal: Suscriptores activos** — descomposición (tendencia/estacionalidad/residuo) del stock mensual de activos netos de pausas, y por qué esa es la definición de activo que hay que leer. El informe no incluye previsión (decisión del 2026-10-18): las tres páginas de serie temporal son descriptivas.
 
    La **estacionalidad semanal y anual** se analiza sobre el *flujo* de altas diarias, no sobre el stock: un stock de suscriptores no puede oscilar por día de la semana, porque nadie cancela el domingo y se reactiva el lunes. El flujo sale de `dim_customers.first_subscription_date` y se descompone con MSTL para separar las dos estacionalidades a la vez.
 
@@ -12,13 +12,13 @@ Páginas, en este orden:
 
 3. **Serie temporal: Ingresos totales** — mismo tratamiento que la página anterior, para ingresos online + tienda combinados, desglosados también por canal.
 
-4. **Serie temporal: Demanda por sabor de cápsula** — análisis y forecast a nivel SKU. Debe mostrar explícitamente cómo se trató la demanda censurada por rotura de stock y la discontinuidad de SKUs relanzados.
+4. **Serie temporal: Demanda por sabor de cápsula** — análisis a nivel SKU. Debe mostrar explícitamente cómo se trató la demanda censurada por rotura de stock y la discontinuidad de SKUs relanzados.
 
    La serie se mide en **unidades, no en euros**, y se agrega por `canonical_sku`: el relanzamiento de un SKU sube el precio entre un 9% y un 11%, así que en euros hay un escalón real de precio que se confundiría con un cambio de demanda. La discontinuidad hay que arreglarla en unidades y dejarla intacta en euros.
 
    La **detección de la censura** se enseña como procedimiento, no como resultado: el ranking ingenuo por longitud de la racha de ceros falla, y lo que funciona es contrastar la demanda esperada dentro de la ventana usando el club —que no se censura— como grupo de control. La validación contra el manifiesto del generador va después, explicando que no se usó para detectar.
 
-   El **forecast se publica con reparto middle-out**: los diez sabores de base como un bloque repartido por cuota y los dos de temporada con modelo propio, porque el agregado mezcla dos calendarios incompatibles. Las partes suman el total por construcción. La banda es empírica y **sin centrar**, para que los dos SKUs de temporada —con una sola temporada completa de histórico— salgan con la incertidumbre que de verdad tienen (veinte a uno frente al 1,5 a 1 del total) en vez de con un punto reescalado.
+   La página enseña **dos regímenes de demanda**: los diez sabores de base comparten calendario (techo en marzo, suelo en agosto) y los dos de temporada tienen amplitudes de 12 a 1 y de 27 a 1. Son el 9% del volumen y en el agregado no se ven, pero son los que deciden el calendario de compras.
 
 5. **Cohortes & RFM** — curvas de retención por cohorte de alta de suscripción, con el efecto del descuento de bienvenida aislado explícitamente, y segmentación RFM de compradores puntuales (tienda + online).
 

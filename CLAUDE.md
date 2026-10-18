@@ -6,15 +6,17 @@ Side project de portfolio para demostrar competencias de **Analytics Engineering
 
 Simula el negocio de una marca de cápsulas de café con modelo de suscripción tipo Nespresso: club de suscripción de cápsulas, tienda online + boutiques físicas, y venta puntual de máquinas de cápsulas.
 
-El objetivo **no** es solo construir un pipeline de datos: es demostrar sensibilidad analítica y de negocio a través de cuatro técnicas que se combinan en una sola historia — análisis de series temporales, forecasting, cohortes/RFM y atribución de marketing — que terminan cruzándose en un único insight de cierre: CAC por canal vs LTV real observado por canal.
+El objetivo **no** es solo construir un pipeline de datos: es demostrar sensibilidad analítica y de negocio a través de tres técnicas que se combinan en una sola historia — análisis descriptivo de series temporales, cohortes/RFM y atribución de marketing — que terminan cruzándose en un único insight de cierre: CAC por canal vs LTV por canal. El peso del proyecto está en la ingeniería que lo sostiene: dbt, Airflow + Cosmos, el informe HTML y el dashboard de Claude.
 
 ## Decisiones de alcance ya tomadas
 
 No reabrir estas decisiones sin confirmar antes con Diego:
 
 - Se incluye la venta de máquinas de cápsulas como compra puntual de alto valor, además de la suscripción recurrente.
-- Hay tres series temporales protagonistas, cada una con su propia página en el informe final: **suscriptores activos**, **ingresos totales** (online + tienda) y **demanda por sabor de cápsula** (a nivel SKU).
+- Hay tres series temporales protagonistas, cada una con su propia página en el informe final: **suscriptores activos**, **ingresos totales** (online + tienda) y **demanda por sabor de cápsula** (a nivel SKU). El análisis es descriptivo: descomposición, estacionalidad e imperfecciones.
+- **Sin previsión** (decidido el 2026-10-18): ni modelos de forecast, ni backtesting, ni contrastes de estacionariedad, en los notebooks ni en el informe. El código que los sostenía se borró de `analysis/utils_*.py` (queda en el historial de git). El **LTV proyectado a 36 meses sí se queda**: es una valoración del cliente con su curva de retención, no una previsión de serie, y la tesis de cierre depende de él.
 - Stack: Python + pandas + DuckDB + dbt (adaptador `dbt-duckdb`). Nada de Snowflake ni Databricks — todo debe correr en local, sin servicios cloud de pago.
+- Orquestación: **Airflow 3 con Astro CLI** sobre Docker Desktop, en local (Astro Runtime 3.3, Python 3.13), y dbt dentro del DAG con **`astronomer-cosmos`**. La imagen separa tres entornos: Airflow (sólo Cosmos), un venv de dbt (`/opt/venvs/dbt`, el `dbt_executable_path` de Cosmos) y un venv de análisis (`/opt/venvs/analysis`, con papermill y el kernel `capsule-analysis`). La ejecución sin Airflow (venv local + los comandos del README) tiene que seguir funcionando.
 - Los datos son 100% sintéticos y **deliberadamente imperfectos** (ver `docs/data_imperfections.md`). Tratar esas imperfecciones con criterio es una parte central del valor del proyecto, no un problema a esconder — deben mencionarse explícitamente en el informe final, no solo corregirse en silencio.
 - Entregable final: informe HTML estático multipágina, interactivo (gráficos Plotly), navegable sin necesidad de levantar un servidor.
 
@@ -34,8 +36,22 @@ capsule-club-analytics/
 ├── CLAUDE.md
 ├── README.md
 ├── PROMPTS.md
-├── requirements.txt
+├── requirements.txt               # instalación local: incluye requirements/analysis.txt y dbt.txt
+├── requirements/
+│   ├── analysis.txt               # generador, notebooks, informe, papermill
+│   ├── dbt.txt                    # dbt-core + dbt-duckdb
+│   ├── airflow.txt                # entorno de Airflow: sólo astronomer-cosmos
+│   └── constraints.txt            # freeze del venv local; fija las versiones de la imagen
 ├── .gitignore
+├── Dockerfile                     # Astro Runtime -base + venvs de dbt y de análisis
+├── .dockerignore
+├── docker-compose.override.yml    # monta en el contenedor lo que escribe el DAG
+├── packages.txt                   # apt de la imagen
+├── airflow_settings.yaml          # pools/variables locales de Astro, sin secretos
+├── .astro/                        # config del proyecto Astro
+├── dags/                          # DAG capsule_club_pipeline (prompts 14-16)
+├── include/
+├── plugins/, tests/               # vacíos; los crea Astro CLI al arrancar, no versionar
 ├── docs/
 │   ├── data_schema.md
 │   ├── data_imperfections.md
@@ -59,7 +75,7 @@ capsule-club-analytics/
 │       └── marts/
 ├── analysis/
 │   ├── utils_timeseries.py
-│   ├── utils_subscriptions.py     # modelo de cohortes, compartido por 01 y 02
+│   ├── utils_subscriptions.py     # curva de retención por edad, la usa 04
 │   ├── 01_time_series_suscriptores.ipynb
 │   ├── 02_time_series_ingresos.ipynb
 │   ├── 03_time_series_capsulas.ipynb
@@ -67,10 +83,20 @@ capsule-club-analytics/
 │   ├── 05_attribution.ipynb
 │   ├── 06_cac_ltv_crossover.ipynb
 │   └── outputs/                   # json/parquet intermedios, no versionar
-└── report/
-    ├── build_report.py
-    └── templates/
+├── report/
+│   ├── build_report.py
+│   └── templates/
+└── dashboard/
+    └── data/                      # CSV para el dashboard de Claude (prompt 16), versionar
 ```
+
+En el contenedor el proyecto vive en `/usr/local/airflow`. `data/`,
+`analysis/outputs/`, `report/dist/` y `dashboard/data/` se montan desde el repo
+del host, así que lo que escribe el DAG aparece aquí. El resto del código va
+horneado en la imagen: si se toca un notebook, el generador, el informe o
+`dbt_project/`, hay que hacer `astro dev restart` (sólo `dags/` e `include/` se
+recargan en caliente). `CAPSULE_DUCKDB_PATH` apunta a
+`/usr/local/airflow/data/warehouse.duckdb`.
 
 ## Convenciones
 
@@ -94,7 +120,7 @@ y 220 tests: `dbt build` deja 245/245 nodos en verde), las seis páginas de
 análisis y el informe HTML. El siguiente es el prompt 12, la revisión final.
 
 El informe se genera con `python report/build_report.py` y sale en
-`report/dist/` (7 páginas, 23 gráficos, 25 recomendaciones, 1,1 MB de HTML más
+`report/dist/` (7 páginas, 24 gráficos, 23 recomendaciones, 1,0 MB de HTML más
 Plotly vendorizado). Se abre con `file://` y no hace ni una petición remota.
 
 Dos marts nuevos salidos de esa ronda, que los prompts siguientes deberían
@@ -103,13 +129,6 @@ antes no tenía serie temporal) y `dim_subscriptions` (grano de suscripción, co
 `start_date` diario, para analizar el flujo de altas y hacer supervivencia sin
 reconstruirla desde el estado mensual).
 
-El modelo de cohortes de `analysis/utils_subscriptions.py` se instancia con
-`calibrate=True` para descontar su propio sesgo con un backtesting interno al
-entrenamiento. Conviene saber que **calibrar cuesta precisión a horizontes
-cortos**: a seis meses mejora todo (MASE 0,115 → 0,087), a tres meses baja el
-sesgo de 33 a 8 pero sube el MASE de 0,067 a 0,092. Para horizonte corto,
-desactivarla.
-
 Regla que las páginas 6 y 7 tienen que respetar: **los touchpoints de los últimos
 ~70 días del histórico están censurados por construcción**. Cada recorrido de
 marketing se genera hacia atrás desde la fecha de alta con una ventana de
@@ -117,14 +136,20 @@ consideración de unos 70 días, así que quien se dé de alta después del cier
 aporta ninguno. Cualquier métrica de volumen o de coste por touchpoint debe
 excluir ese tramo o comparar sólo periodos completos.
 
-El notebook 01 deja tres piezas reutilizables para los notebooks 02 y 03:
+Del notebook 01: la estacionalidad semanal va sobre **flujos**, nunca sobre stocks,
+y se separa de la anual con `mstl_decompose`. `docs/report_structure.md` ya lo
+recoge así.
 
-- el patrón de `forecast_fn(train, horizon)` con backtesting walk-forward comparado
-  siempre contra un naive estacional como suelo;
-- en series de 36 puntos hay que acotar el `maxlag` del ADF (la regla por defecto
-  pide 10 retardos y el contraste llega a mentir);
-- la estacionalidad semanal va sobre **flujos**, nunca sobre stocks, y se separa de
-  la anual con `mstl_decompose`. `docs/report_structure.md` ya lo recoge así.
+**El STL robusto necesita `seasonal_deg=0` con 36 meses** (es el valor por defecto
+de `ts.stl_decompose`; no quitarlo). Con el grado 1 de statsmodels, cada mes del
+año tiene tres valores, la recta estacional casi pasa por ellos, el residuo queda
+en ~1e-16 y la escala robusta se hunde: los pesos salían 0 durante un año entero y
+la tendencia dependía del último bit (multiplicar la serie por 1 + 2·eps la movía
+un 2%), así que Windows y Linux publicaban cifras distintas. Al arreglarlo
+cambiaron dos lecturas: el atípico de suscriptores ya no es agosto de 2024 sino
+**agosto de 2025 y de 2026, por debajo** (la pausa de verano crece cada año), y la
+fuerza estacional de boutique y suscripción pasa a 0,76 y 0,46. Los atípicos
+relativos se miden sólo desde el mes 13, por la misma razón que los perfiles.
 
 Del notebook 02, dos cosas que el 03 necesitó: para detectar una imperfección
 en una serie que crece, lo que importa es elegir un denominador que no crezca (el
@@ -133,7 +158,7 @@ perfiles estacionales en % sobre tendencia hay que calcularlos sobre el tramo ma
 y con mediana, porque en el año de arranque la tendencia es tan pequeña que el
 porcentaje se dispara.
 
-Del notebook 03, cuatro cosas que conviene arrastrar a las páginas siguientes:
+Del notebook 03, dos cosas que conviene arrastrar a las páginas siguientes:
 
 - **La demanda de cápsulas se reparte 69% tienda / 31% club**, no al revés. El
   comentario de cabecera de `fct_shipments` decía lo contrario y se ha corregido.
@@ -142,18 +167,6 @@ Del notebook 03, cuatro cosas que conviene arrastrar a las páginas siguientes:
   líneas), usando el club como grupo de control porque no se censura. 6/6 sin
   falsos positivos y la censura estimada se desvía un +0,7% de la real. El
   manifiesto sólo se abre después, para validar.
-- **Una imperfección pequeña en el agregado puede ser grande en el origen del
-  forecast**: la censura vale el 1,35% de la facturación de cápsulas en tienda,
-  pero tres de las seis ventanas caen en los últimos siete meses y corregirlas sube
-  un 15,3% la previsión de Intenso 10. El backtesting no llega a verlo porque esa
-  ventana cae fuera de sus pliegues de entrenamiento.
-- **`ts.empirical_interval` no vale para series muy estacionales.** Su corrección
-  por sesgo relativo pide multiplicar por más de dos la previsión de los dos sabores
-  de temporada (amplitudes de 12 a 1 y de 27 a 1): un sesgo relativo medio no
-  significa nada cuando se promedian meses cuyo nivel se diferencia en un orden de
-  magnitud. En el notebook 03 el punto se publica sin corregir y la banda se mide
-  **sin centrar** y en logaritmos (`log_band`). Para las páginas 5 a 7, que
-  trabajan sobre agregados, la función original sigue siendo la correcta.
 
 Del notebook 04, lo que las páginas 6 y 7 tienen que heredar:
 
@@ -171,14 +184,13 @@ Del notebook 04, lo que las páginas 6 y 7 tienen que heredar:
 - **`direct_unknown` no es un canal**: es el 29% de las altas y el cajón de las
   conversiones sin touchpoint resuelto. La página 6 tiene que cuantificarlo, no
   repartirlo en silencio.
-- **`ts.empirical_interval` no es lo único de `utils_` que hay que mirar con
-  lupa**: el `tail_hazard` de `utils_subscriptions.build_retention_curve` se
-  estima sobre las últimas edades de la curva, que las escriben 1-4 cohortes, y
-  **sale negativo en dos canales** (retención que crecería con la edad). Para el
-  forecast a 6 meses de la página 2 da igual; para un LTV a 36 meses no. El
-  notebook 04 define un `reliable_curve()` local que corta el tramo observado
-  donde deja de haber cohortes suficientes, impone monotonía y reestima el
-  hazard. `utils_subscriptions.py` **no** se ha tocado.
+- **El `tail_hazard` de `utils_subscriptions.build_retention_curve` hay que
+  mirarlo con lupa**: se estima sobre las últimas edades de la curva, que las
+  escriben 1-4 cohortes, y **sale negativo en dos canales** (retención que
+  crecería con la edad). Para un LTV a 36 meses importa. El notebook 04 define un
+  `reliable_curve()` local que corta el tramo observado donde deja de haber
+  cohortes suficientes, impone monotonía y reestima el hazard;
+  `build_retention_curve` no se ha tocado.
 
 Decisión ya tomada sobre los downgrades (era la única pendiente): **se corrigió el
 catálogo, no el generador**. El downgrade mueve el plan hacia el ciclo corto, que
@@ -280,7 +292,7 @@ segunda pasada). Cinco reglas que conviene no deshacer:
   `theme.layout` fija `separators` a coma decimal; lo que se formatea desde
   Python pasa por `_es()` en `figures.py`. Si un número sale con punto, se ha
   escapado uno de los dos caminos.
-- **Los 22 gráficos llevan tabla.** Era el punto que fallaba: catorce no la
+- **Los 24 gráficos llevan tabla.** Era el punto que fallaba: catorce no la
   tenían. Las construye el bloque `TBL` de `content.py` desde los mismos JSON
   que alimentan la figura, así que no pueden discrepar.
 - **Ninguna fila de la rejilla se queda coja.** Un gráfico `half` suelto deja

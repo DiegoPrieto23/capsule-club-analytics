@@ -2,7 +2,7 @@
 
 La calidad narrativa de este proyecto depende de que estas imperfecciones existan de verdad en los datos generados, y de que el análisis las reconozca y trate explícitamente en vez de ignorarlas. No son bugs a esconder — son la parte del proyecto que demuestra criterio analítico real frente a un dataset de Kaggle ya limpio.
 
-## Forecasting / series temporales
+## Series temporales
 
 - **Pausas estacionales masivas** en verano y en torno a Navidad — no son cancelación, pero rompen la continuidad de "activos" si se cuentan igual que un churn real.
 - **Fallos de cobro (dunning)**: un suscriptor "desaparece" temporalmente de las métricas hasta que se reintenta el cobro con éxito, generando ruido en la serie diaria que no es churn real.
@@ -66,7 +66,7 @@ La lista completa de invariantes está en `data_schema.md`.
   contra `END_DATE` cualquier evento programado para después del corte en vez de
   descartarlo, apilando 1.025 envíos el 2026-08-31 frente a una media de 75/día
   (y ×13 en pagos, ×18 en cancelaciones, ×6 en compras de máquina). Se detectó
-  analizando la serie de ingresos, porque inflaba un 15% el último mes, que es
-  justo el origen de los forecasts. Ahora `event_day()` descarta lo que cae
+  analizando la serie de ingresos, porque inflaba un 15% el último mes del
+  histórico. Ahora `event_day()` descarta lo que cae
   fuera de la ventana de observación. Esto **no** era una imperfección del
   catálogo: era un bug.

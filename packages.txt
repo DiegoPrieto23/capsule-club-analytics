@@ -1,0 +1,3 @@
+# Paquetes apt de la imagen de Airflow (uno por línea).
+libgomp1   # OpenMP, lo necesita lightgbm
+git        # dbt debug lo exige (es la dependencia de dbt deps), aunque no haya paquetes

@@ -139,34 +139,18 @@ def cac_ltv_scatter(cac_ltv, mode):
 
 # ---------------------------------------------------------------- suscriptores
 
-def subscribers_forecast(subs, mode):
-    """Histórico y previsión: una serie, banda de incertidumbre, sin leyenda de color."""
-    t = T.tokens(mode)
+def subscribers_history(subs, mode):
+    """Serie mensual de activos netos de pausas. Una serie: sin leyenda, etiqueta en el extremo."""
     hist = subs["series"]["active_net"]
-    fc = subs["forecast"]
-    months = fc["months"]
-    # El notebook 01 publica dos modelos; el de cohortes es el que la pagina defiende.
-    model = fc["models"].get("cohortes") or next(iter(fc["models"].values()))
+    color = T.series(0, mode)
     fig = _fig(mode, height=400)
     fig.add_trace(go.Scatter(
-        x=months + months[::-1],
-        y=model["yhat_upper"] + model["yhat_lower"][::-1],
-        fill="toself", fillcolor=t["band"], line=dict(width=0), hoverinfo="skip",
-        name="Banda 80%"))
-    fig.add_trace(go.Scatter(
-        x=_dates(hist), y=_vals(hist, "suscriptores"), name="Histórico", mode="lines",
-        line=dict(color=T.series(0, mode), width=LINE + 0.5),
+        x=_dates(hist), y=_vals(hist, "suscriptores"), name="Activos", mode="lines",
+        line=dict(color=color, width=LINE + 0.5), showlegend=False,
         hovertemplate="%{y:,.0f} suscriptores<extra></extra>"))
-    bridge_x = [hist[-1]["date"]] + months
-    bridge_y = [hist[-1]["suscriptores"]] + model["yhat"]
-    fig.add_trace(go.Scatter(
-        x=bridge_x, y=bridge_y, name="Previsión", mode="lines+markers",
-        line=dict(color=T.series(0, mode), width=LINE, dash="dash"),
-        marker=dict(size=MARKER),
-        hovertemplate="%{y:,.0f} previstos<extra></extra>"))
-    _endpoint_label(fig, months[-1], model["yhat"][-1], _num(model["yhat"][-1]),
-                    T.series(0, mode), mode)
-    fig.update_layout(yaxis_title="suscriptores activos")
+    _endpoint_label(fig, hist[-1]["date"], hist[-1]["suscriptores"],
+                    _num(hist[-1]["suscriptores"]), color, mode)
+    fig.update_layout(yaxis_title="suscriptores activos", margin={"r": 72})
     return fig
 
 
@@ -561,89 +545,6 @@ def margin_sensitivity(cac_ltv, mode):
                   annotation_text="umbral 3x", annotation_position="top left",
                   annotation=dict(font=dict(size=11, color=t["ink_muted"])))
     fig.update_layout(xaxis_title="margen bruto supuesto (%)", yaxis_title="ratio LTV:CAC")
-    return fig
-
-
-# ---------------------------------------------------------------- previsión
-
-def _forecast_figure(mode, hist_x, hist_y, months, model, y_title, unit,
-                     slot=0, height=380):
-    """
-    Histórico, previsión y banda, con el mismo aspecto en las tres páginas.
-
-    Una sola serie, así que el color no identifica nada: identifica el *estado*
-    —observado frente a previsto— y por eso la previsión es la misma tinta con
-    trazo discontinuo, no un segundo color categórico.
-    """
-    t = T.tokens(mode)
-    color = T.series(slot, mode)
-    fig = _fig(mode, height=height)
-    fig.add_trace(go.Scatter(
-        x=list(months) + list(months)[::-1],
-        y=list(model["yhat_upper"]) + list(model["yhat_lower"])[::-1],
-        fill="toself", fillcolor=t["band"], line=dict(width=0), hoverinfo="skip",
-        name="Banda 80%"))
-    fig.add_trace(go.Scatter(
-        x=hist_x, y=hist_y, name="Observado", mode="lines",
-        line=dict(color=color, width=LINE + 0.5),
-        hovertemplate="%{y:,.0f} " + unit + "<extra></extra>"))
-    fig.add_trace(go.Scatter(
-        x=[hist_x[-1]] + list(months), y=[hist_y[-1]] + list(model["yhat"]),
-        name="Previsión", mode="lines+markers",
-        line=dict(color=color, width=LINE, dash="dash"), marker=dict(size=MARKER),
-        hovertemplate="%{y:,.0f} " + unit + " previstos<extra></extra>"))
-    _endpoint_label(fig, months[-1], model["yhat"][-1], _num(model["yhat"][-1]), color, mode)
-    fig.update_layout(yaxis_title=y_title, margin={"r": 72})
-    return fig
-
-
-def revenue_forecast(ingresos, mode):
-    hist = ingresos["series"]["total"]
-    fc = ingresos["forecast"]
-    return _forecast_figure(mode, _dates(hist), _vals(hist, "eur"), fc["months"],
-                            fc["models"]["sarima_airline"], "€ por mes", "€")
-
-
-def capsule_forecast(capsulas, mode):
-    hist = capsulas["series"]["total"]
-    fc = capsulas["forecast"]
-    return _forecast_figure(mode, _dates(hist), _vals(hist, "units"), fc["months"],
-                            fc["total"], "unidades por mes", "unidades")
-
-
-def backtest_quality(leaderboards, mode):
-    """
-    Lo que hace creíble una previsión no es la línea, es el error medido fuera
-    de muestra. Tres series temporales, cada una contra el suelo de repetir el
-    año anterior: es una comparación de magnitud, así que barras horizontales.
-    """
-    t = T.tokens(mode)
-    labels, model_mape, naive_mape = [], [], []
-    for label, rows in leaderboards:
-        best = min((r for r in rows if r["model"] != "naive_estacional"),
-                   key=lambda r: r["mase"])
-        naive = next(r for r in rows if r["model"] == "naive_estacional")
-        labels.append(label)
-        model_mape.append(best["mape"])
-        naive_mape.append(naive["mape"])
-    fig = _fig(mode, height=330, hovermode="closest",
-               margin={"l": 158, "r": 84, "t": 16, "b": 44})
-    fig.add_trace(go.Bar(
-        y=labels, x=naive_mape, orientation="h", name="Repetir el año anterior",
-        marker=dict(color=t["ink_muted"], line=dict(width=0)),
-        text=[_es(f"{v:.1f}%") for v in naive_mape], textposition="outside",
-        textfont=dict(size=11, color=t["ink_secondary"]),
-        hovertemplate="%{y}: %{x:.1f}% de error<extra>naive</extra>"))
-    fig.add_trace(go.Bar(
-        y=labels, x=model_mape, orientation="h", name="Modelo publicado",
-        marker=dict(color=T.series(0, mode), line=dict(width=0)),
-        text=[_es(f"{v:.1f}%") for v in model_mape], textposition="outside",
-        textfont=dict(size=11, color=t["ink_secondary"]),
-        hovertemplate="%{y}: %{x:.1f}% de error<extra>modelo</extra>"))
-    # Sin holgura a la derecha, la etiqueta del naive se sale del lienzo.
-    fig.update_layout(barmode="group", bargap=0.3, bargroupgap=0.1,
-                      xaxis_title="error medio del pronóstico a 6 meses (MAPE, %)",
-                      xaxis=dict(range=[0, max(naive_mape) * 1.18]))
     return fig
 
 

@@ -23,6 +23,7 @@ dist/
 *.duckdb.tmp/
 data/warehouse.duckdb
 data/raw/*.parquet
+data/raw/.staging/
 
 # --- Outputs de análisis (regenerables) ---
 analysis/outputs/
@@ -44,6 +45,19 @@ logs/
 # tragaba report/dist/, que es justo lo contrario de lo que se quiere.
 !report/dist/
 !report/dist/**
+
+# --- Astro CLI / Airflow local ---
+# airflow_settings.yaml sí se versiona: no lleva secretos (ver el propio fichero).
+.astro/standalone/
+.astro/worktrees/
+.astro/*.local.yml
+.astro/*.local.yaml
+**/.astro/dbt_metadata.json
+**/.astro/manifest.slim.json
+airflow-webserver.pid
+webserver_config.py
+airflow.cfg
+airflow.db
 
 # --- Sistema / editores ---
 .DS_Store

@@ -81,6 +81,27 @@ FORMATTERS = {"eur": eur, "num": num, "pct": pct, "ratio": ratio, "month_es": mo
 
 # ---------------------------------------------------------------- figuras
 
+def _round_floats(obj, digits=10):
+    """
+    Redondea a `digits` cifras significativas todos los flotantes de una spec.
+
+    Las sumas de DuckDB no garantizan el orden, así que dos ejecuciones con los
+    mismos datos (o Windows frente al contenedor de Airflow) dan 33736.48 o
+    33736.479999999996. En pantalla es la misma cifra, pero el HTML cambiaría y
+    `git diff report/dist` no serviría para comprobar que el informe no se ha
+    movido. Diez cifras son muchas más de las que enseña cualquier gráfico.
+    """
+    if isinstance(obj, float):
+        return float(f"{obj:.{digits}g}")
+    if isinstance(obj, dict):
+        return {k: _round_floats(v, digits) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_round_floats(v, digits) for v in obj]
+    if hasattr(obj, "tolist"):          # arrays y escalares de numpy
+        return _round_floats(obj.tolist(), digits)
+    return obj
+
+
 class Figure:
     """Una figura con sus dos especificaciones, su tabla y su ancho en la rejilla."""
 
@@ -97,7 +118,7 @@ class Figure:
         for mode in MODES:
             spec = builder(data, mode).to_plotly_json()
             self.specs[mode] = json.dumps(
-                {"data": spec["data"], "layout": spec["layout"]},
+                _round_floats({"data": spec["data"], "layout": spec["layout"]}),
                 default=str, separators=(",", ":"))
 
     @property
@@ -124,7 +145,10 @@ def load_data():
             raise SystemExit(
                 f"falta {path.relative_to(ROOT)}. Ejecuta antes los notebooks de analysis/."
             )
-        data[name] = json.loads(path.read_text(encoding="utf-8"))
+        # Se redondea al cargar, y no sólo en las figuras, porque un importe que
+        # termina en ,50 € redondea a un euro u otro según ese último bit, y eso sí
+        # se ve en las tablas y en la prosa.
+        data[name] = _round_floats(json.loads(path.read_text(encoding="utf-8")))
     return data
 
 

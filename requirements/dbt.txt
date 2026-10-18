@@ -1,0 +1,9 @@
+# dbt sobre DuckDB. En la imagen de Airflow va en su propio venv (/opt/venvs/dbt),
+# que Cosmos invoca con dbt_executable_path. En local entra por requirements.txt.
+#
+# Techo en <2: dbt v2 ya se publica y cambia de paquete; el proyecto está en 1.x.
+dbt-core>=1.12,<2
+dbt-duckdb>=1.11,<2
+# Misma versión menor de DuckDB que el venv de análisis: el fichero lo escribe el
+# generador y lo lee dbt, y un DuckDB más antiguo no abre uno más nuevo.
+duckdb>=1.5,<1.6

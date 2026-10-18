@@ -1,0 +1,35 @@
+# Volúmenes de Astro CLI: lo que escribe el DAG aparece en el repo del host en vez
+# de quedarse dentro del contenedor. Astro CLI aplica este fichero solo al hacer
+# `astro dev start`.
+#
+# Se monta data/ entero y no data/warehouse.duckdb suelto: DuckDB crea su .wal al
+# lado del fichero, y el generador lo borra y lo reconstruye, cosa que un bind
+# mount de un único fichero no aguanta.
+#
+# Se monta en todos los servicios de Airflow porque Cosmos lee dbt y DuckDB tanto
+# al parsear el DAG (dag-processor) como al ejecutar tareas (scheduler, con
+# LocalExecutor) o al diferirlas (triggerer).
+
+x-capsule-volumes: &capsule-volumes
+  - ./data:/usr/local/airflow/data
+  - ./analysis/outputs:/usr/local/airflow/analysis/outputs
+  - ./report/dist:/usr/local/airflow/report/dist
+  - ./dashboard/data:/usr/local/airflow/dashboard/data
+
+x-capsule-env: &capsule-env
+  # profiles.yml lo lee; si no, usaría la ruta relativa ../data/warehouse.duckdb.
+  CAPSULE_DUCKDB_PATH: /usr/local/airflow/data/warehouse.duckdb
+
+services:
+  scheduler:
+    volumes: *capsule-volumes
+    environment: *capsule-env
+  dag-processor:
+    volumes: *capsule-volumes
+    environment: *capsule-env
+  triggerer:
+    volumes: *capsule-volumes
+    environment: *capsule-env
+  api-server:
+    volumes: *capsule-volumes
+    environment: *capsule-env
