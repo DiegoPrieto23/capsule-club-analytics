@@ -1,6 +1,6 @@
 """Pipeline de Capsule Club orquestado con Airflow + Cosmos.
 
-    generate_data >> dbt >> analysis >> build_report
+    generate_data >> dbt >> analysis >> build_report >> export_dashboard_data
 
 Se lanza a mano (sin schedule). Cada paso usa el venv que le toca dentro de la
 imagen (ver Dockerfile): el generador, los notebooks y el informe, el de análisis;
@@ -39,7 +39,8 @@ airflow_settings.yaml): con los cinco primeros a la vez, DuckDB llegó a fallar
 con "Cannot allocate memory" dentro de la VM de Docker Desktop.
 - dbt, ninguno: el productor no repite el `dbt build` al reintentarse, y un
   sensor reintentado lanza su propio `dbt run`, que competiría por el bloqueo.
-- `build_report`, ninguno: sólo lee JSON y escribe HTML; si falla, es un bug.
+- `build_report` y `export_dashboard_data`, ninguno: sólo leen JSON y escriben
+  HTML o CSV; si fallan, es un bug.
 """
 
 from __future__ import annotations
@@ -153,4 +154,14 @@ with DAG(
         execution_timeout=timedelta(minutes=10),
     )
 
-    generate_data >> dbt >> analysis >> build_report
+    # Los CSV del dashboard de Claude salen de los mismos JSON y las cifras de los
+    # KPI y las recomendaciones, de report/content.py. Va detrás del informe para
+    # que el dashboard nunca publique una cifra que el informe no haya publicado.
+    export_dashboard_data = BashOperator(
+        task_id="export_dashboard_data",
+        bash_command=f'"{ANALYSIS_BIN}/python" dashboard/export_dashboard_data.py',
+        cwd=str(AIRFLOW_HOME),
+        execution_timeout=timedelta(minutes=5),
+    )
+
+    generate_data >> dbt >> analysis >> build_report >> export_dashboard_data

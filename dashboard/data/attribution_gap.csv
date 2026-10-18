@@ -1,0 +1,7 @@
+channel,channel_label,color,color_dark,is_paid,touchpoints,orphan_touchpoints,orphan_touchpoints_pct,attributable_cost_eur,orphan_cost_eur,total_cost_eur,cac_attributed_eur,cac_loaded_eur,cac_uplift_pct
+direct_unknown,Directo / sin resolver,#83827c,#8f8e86,false,8192,8192,100,0,0,0,,,
+influencer_code,Código influencer,#e87ba4,#d55181,true,7049,1357,19.25095758,12973.34,3466.49,16439.83,15.06715987,19.09312072,26.72010442
+organic,Orgánico,#4a3aa7,#9085e9,false,7301,1711,23.43514587,0,0,0,,,
+paid_social,Paid social,#2a78d6,#3987e5,true,11164,3422,30.65209602,11435.17,5076.71,16511.88,9.999690076,14.43911044,44.39557957
+podcast_ads,Podcast,#eda100,#c98500,true,5074,1208,23.80764683,6978.43,2208.74,9187.17,10.26935455,13.51970373,31.65095882
+referral,Referido,#008300,#008300,true,3791,865,22.81719863,17482.15,5099.77,22581.92,31.41135064,40.57444922,29.17129761

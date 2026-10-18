@@ -1,0 +1,21 @@
+channel,channel_label,color,color_dark,model,model_label,credit_pct,cac_eur,is_paid,credit_spread_pp
+influencer_code,Código influencer,#e87ba4,#d55181,first_touch,First touch,21.60479042,14.38286031,true,2.160376756
+influencer_code,Código influencer,#e87ba4,#d55181,last_touch,Last touch,19.50678175,15.92977697,true,2.160376756
+influencer_code,Código influencer,#e87ba4,#d55181,linear,Linear,21.66715851,14.3414598,true,2.160376756
+influencer_code,Código influencer,#e87ba4,#d55181,markov,Markov,20.62357374,15.06715987,true,2.160376756
+organic,Orgánico,#4a3aa7,#9085e9,first_touch,First touch,20.74251497,,false,3.597805622
+organic,Orgánico,#4a3aa7,#9085e9,last_touch,Last touch,24.34032059,,false,3.597805622
+organic,Orgánico,#4a3aa7,#9085e9,linear,Linear,22.03441294,,false,3.597805622
+organic,Orgánico,#4a3aa7,#9085e9,markov,Markov,22.37889515,,false,3.597805622
+paid_social,Paid social,#2a78d6,#3987e5,first_touch,First touch,29.53293413,9.274266018,true,2.142456493
+paid_social,Paid social,#2a78d6,#3987e5,last_touch,Last touch,28.40937115,9.641054214,true,2.142456493
+paid_social,Paid social,#2a78d6,#3987e5,linear,Linear,28.97862086,9.451667447,true,2.142456493
+paid_social,Paid social,#2a78d6,#3987e5,markov,Markov,27.39047764,9.999690076,true,2.142456493
+podcast_ads,Podcast,#eda100,#c98500,first_touch,First touch,15.49700599,10.78582689,true,1.899078448
+podcast_ads,Podcast,#eda100,#c98500,last_touch,Last touch,14.37731196,11.62581882,true,1.899078448
+podcast_ads,Podcast,#eda100,#c98500,linear,Linear,14.9790422,11.15879251,true,1.899078448
+podcast_ads,Podcast,#eda100,#c98500,markov,Markov,16.27639041,10.26935455,true,1.899078448
+referral,Referido,#008300,#008300,first_touch,First touch,12.62275449,33.17296015,true,1.025449054
+referral,Referido,#008300,#008300,last_touch,Last touch,13.36621455,31.32780266,true,1.025449054
+referral,Referido,#008300,#008300,linear,Linear,12.3407655,33.93096902,true,1.025449054
+referral,Referido,#008300,#008300,markov,Markov,13.33066306,31.41135064,true,1.025449054

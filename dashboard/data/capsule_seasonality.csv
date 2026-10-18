@@ -1,0 +1,145 @@
+month_of_year,month_label,flavor,flavor_label,is_seasonal,color,color_dark,demand_index,demand_index_log2
+1,Ene,classic_espresso,Espresso clásico,false,#83827c,#8f8e86,1.191516239,0.2527986139
+1,Ene,classic_lungo,Lungo clásico,false,#83827c,#8f8e86,1.054700167,0.07683292399
+1,Ene,decaf_classic,Descafeinado,false,#83827c,#8f8e86,1.230627075,0.2993936387
+1,Ene,decaf_vanilla,Descaf. vainilla,false,#83827c,#8f8e86,1.107077203,0.1467558332
+1,Ene,intense_10,Intenso 10,false,#83827c,#8f8e86,1.287557408,0.3646367588
+1,Ene,intense_12,Intenso 12,false,#83827c,#8f8e86,1.174482378,0.2320250672
+1,Ene,intense_8,Intenso 8,false,#83827c,#8f8e86,1.162175582,0.2168280482
+1,Ene,origin_brazil,Origen Brasil,false,#83827c,#8f8e86,1.157649819,0.2111989141
+1,Ene,origin_colombia,Origen Colombia,false,#83827c,#8f8e86,1.090452426,0.1249268298
+1,Ene,origin_ethiopia,Origen Etiopía,false,#83827c,#8f8e86,1.110045047,0.1506182241
+1,Ene,seasonal_gingerbread,Temporada jengibre,true,#2a78d6,#3987e5,1.940917887,0.9567390843
+1,Ene,seasonal_pumpkin,Temporada calabaza,true,#eb6834,#d95926,0.2886013865,-1.792849864
+2,Feb,classic_espresso,Espresso clásico,false,#83827c,#8f8e86,1.149248768,0.2006911196
+2,Feb,classic_lungo,Lungo clásico,false,#83827c,#8f8e86,1.098983659,0.1361699347
+2,Feb,decaf_classic,Descafeinado,false,#83827c,#8f8e86,1.105979092,0.1453241124
+2,Feb,decaf_vanilla,Descaf. vainilla,false,#83827c,#8f8e86,1.14489987,0.1952214294
+2,Feb,intense_10,Intenso 10,false,#83827c,#8f8e86,1.100083947,0.1376136195
+2,Feb,intense_12,Intenso 12,false,#83827c,#8f8e86,1.081548542,0.1130984177
+2,Feb,intense_8,Intenso 8,false,#83827c,#8f8e86,1.154221596,0.2069202298
+2,Feb,origin_brazil,Origen Brasil,false,#83827c,#8f8e86,1.10662829,0.1461707106
+2,Feb,origin_colombia,Origen Colombia,false,#83827c,#8f8e86,1.04225551,0.05970899913
+2,Feb,origin_ethiopia,Origen Etiopía,false,#83827c,#8f8e86,1.1491241,0.2005346107
+2,Feb,seasonal_gingerbread,Temporada jengibre,true,#2a78d6,#3987e5,0.358502156,-1.4799463
+2,Feb,seasonal_pumpkin,Temporada calabaza,true,#eb6834,#d95926,0.332867967,-1.586978053
+3,Mar,classic_espresso,Espresso clásico,false,#83827c,#8f8e86,1.268564442,0.343196809
+3,Mar,classic_lungo,Lungo clásico,false,#83827c,#8f8e86,1.337494878,0.4195333667
+3,Mar,decaf_classic,Descafeinado,false,#83827c,#8f8e86,1.19022941,0.2512396717
+3,Mar,decaf_vanilla,Descaf. vainilla,false,#83827c,#8f8e86,1.24371728,0.3146585714
+3,Mar,intense_10,Intenso 10,false,#83827c,#8f8e86,1.26270173,0.3365138921
+3,Mar,intense_12,Intenso 12,false,#83827c,#8f8e86,1.193265478,0.2549150499
+3,Mar,intense_8,Intenso 8,false,#83827c,#8f8e86,1.202401157,0.2659183026
+3,Mar,origin_brazil,Origen Brasil,false,#83827c,#8f8e86,1.22656831,0.2946275827
+3,Mar,origin_colombia,Origen Colombia,false,#83827c,#8f8e86,1.223740501,0.2912976613
+3,Mar,origin_ethiopia,Origen Etiopía,false,#83827c,#8f8e86,1.175480137,0.2332501609
+3,Mar,seasonal_gingerbread,Temporada jengibre,true,#2a78d6,#3987e5,0.3979819286,-1.329225172
+3,Mar,seasonal_pumpkin,Temporada calabaza,true,#eb6834,#d95926,0.436088461,-1.197307278
+4,Abr,classic_espresso,Espresso clásico,false,#83827c,#8f8e86,1.164446836,0.2196447733
+4,Abr,classic_lungo,Lungo clásico,false,#83827c,#8f8e86,1.043169831,0.06097405181
+4,Abr,decaf_classic,Descafeinado,false,#83827c,#8f8e86,1.199305165,0.2621988014
+4,Abr,decaf_vanilla,Descaf. vainilla,false,#83827c,#8f8e86,1.09697242,0.1335272541
+4,Abr,intense_10,Intenso 10,false,#83827c,#8f8e86,1.216720013,0.2829972187
+4,Abr,intense_12,Intenso 12,false,#83827c,#8f8e86,1.201124268,0.2643854196
+4,Abr,intense_8,Intenso 8,false,#83827c,#8f8e86,1.162562197,0.2173079024
+4,Abr,origin_brazil,Origen Brasil,false,#83827c,#8f8e86,1.093403949,0.1288264912
+4,Abr,origin_colombia,Origen Colombia,false,#83827c,#8f8e86,1.10325965,0.1417723663
+4,Abr,origin_ethiopia,Origen Etiopía,false,#83827c,#8f8e86,1.102581803,0.1408856965
+4,Abr,seasonal_gingerbread,Temporada jengibre,true,#2a78d6,#3987e5,0.3657417368,-1.451102825
+4,Abr,seasonal_pumpkin,Temporada calabaza,true,#eb6834,#d95926,0.3895199194,-1.360230988
+5,May,classic_espresso,Espresso clásico,false,#83827c,#8f8e86,1.189787889,0.2507043981
+5,May,classic_lungo,Lungo clásico,false,#83827c,#8f8e86,1.159665603,0.213708855
+5,May,decaf_classic,Descafeinado,false,#83827c,#8f8e86,1.188232388,0.2488170181
+5,May,decaf_vanilla,Descaf. vainilla,false,#83827c,#8f8e86,1.195546436,0.2576701666
+5,May,intense_10,Intenso 10,false,#83827c,#8f8e86,1.154906401,0.2077759336
+5,May,intense_12,Intenso 12,false,#83827c,#8f8e86,1.172270157,0.2293050862
+5,May,intense_8,Intenso 8,false,#83827c,#8f8e86,1.178778764,0.2372929753
+5,May,origin_brazil,Origen Brasil,false,#83827c,#8f8e86,1.160680091,0.2149703885
+5,May,origin_colombia,Origen Colombia,false,#83827c,#8f8e86,1.199024298,0.261860895
+5,May,origin_ethiopia,Origen Etiopía,false,#83827c,#8f8e86,1.086857545,0.1201628579
+5,May,seasonal_gingerbread,Temporada jengibre,true,#2a78d6,#3987e5,0.3861134814,-1.372903167
+5,May,seasonal_pumpkin,Temporada calabaza,true,#eb6834,#d95926,0.4947094594,-1.015346609
+6,Jun,classic_espresso,Espresso clásico,false,#83827c,#8f8e86,1.00683322,0.009824723458
+6,Jun,classic_lungo,Lungo clásico,false,#83827c,#8f8e86,1.07788054,0.1081972951
+6,Jun,decaf_classic,Descafeinado,false,#83827c,#8f8e86,1.04144323,0.05858419893
+6,Jun,decaf_vanilla,Descaf. vainilla,false,#83827c,#8f8e86,1.005429225,0.007811529843
+6,Jun,intense_10,Intenso 10,false,#83827c,#8f8e86,0.9418071769,-0.08649637837
+6,Jun,intense_12,Intenso 12,false,#83827c,#8f8e86,1.027069659,0.03853403296
+6,Jun,intense_8,Intenso 8,false,#83827c,#8f8e86,1.026673425,0.03797734713
+6,Jun,origin_brazil,Origen Brasil,false,#83827c,#8f8e86,1.036724698,0.05203283768
+6,Jun,origin_colombia,Origen Colombia,false,#83827c,#8f8e86,1.050023713,0.07042190907
+6,Jun,origin_ethiopia,Origen Etiopía,false,#83827c,#8f8e86,1.006538173,0.009401887563
+6,Jun,seasonal_gingerbread,Temporada jengibre,true,#2a78d6,#3987e5,0.42347689,-1.239644854
+6,Jun,seasonal_pumpkin,Temporada calabaza,true,#eb6834,#d95926,0.4427813893,-1.17533351
+7,Jul,classic_espresso,Espresso clásico,false,#83827c,#8f8e86,0.8969727266,-0.1568639757
+7,Jul,classic_lungo,Lungo clásico,false,#83827c,#8f8e86,0.8961407369,-0.1582027728
+7,Jul,decaf_classic,Descafeinado,false,#83827c,#8f8e86,0.8917214494,-0.1653349748
+7,Jul,decaf_vanilla,Descaf. vainilla,false,#83827c,#8f8e86,0.8829456387,-0.1796034783
+7,Jul,intense_10,Intenso 10,false,#83827c,#8f8e86,0.8761862761,-0.1906904773
+7,Jul,intense_12,Intenso 12,false,#83827c,#8f8e86,0.9141185205,-0.1295468641
+7,Jul,intense_8,Intenso 8,false,#83827c,#8f8e86,0.8565596713,-0.2233743413
+7,Jul,origin_brazil,Origen Brasil,false,#83827c,#8f8e86,0.9114733924,-0.133727553
+7,Jul,origin_colombia,Origen Colombia,false,#83827c,#8f8e86,0.9204667266,-0.1195625235
+7,Jul,origin_ethiopia,Origen Etiopía,false,#83827c,#8f8e86,0.9945355052,-0.007905218286
+7,Jul,seasonal_gingerbread,Temporada jengibre,true,#2a78d6,#3987e5,0.3893957942,-1.360690793
+7,Jul,seasonal_pumpkin,Temporada calabaza,true,#eb6834,#d95926,0.5507384612,-0.8605607313
+8,Ago,classic_espresso,Espresso clásico,false,#83827c,#8f8e86,0.8132460869,-0.2982361194
+8,Ago,classic_lungo,Lungo clásico,false,#83827c,#8f8e86,0.8596981238,-0.2180979371
+8,Ago,decaf_classic,Descafeinado,false,#83827c,#8f8e86,0.8003886428,-0.3212273988
+8,Ago,decaf_vanilla,Descaf. vainilla,false,#83827c,#8f8e86,0.8140311382,-0.2968441136
+8,Ago,intense_10,Intenso 10,false,#83827c,#8f8e86,0.7960186204,-0.3291259163
+8,Ago,intense_12,Intenso 12,false,#83827c,#8f8e86,0.8397188817,-0.2520216668
+8,Ago,intense_8,Intenso 8,false,#83827c,#8f8e86,0.8484671672,-0.2370692614
+8,Ago,origin_brazil,Origen Brasil,false,#83827c,#8f8e86,0.8368038063,-0.257038681
+8,Ago,origin_colombia,Origen Colombia,false,#83827c,#8f8e86,0.8372375864,-0.2562910144
+8,Ago,origin_ethiopia,Origen Etiopía,false,#83827c,#8f8e86,0.9250437609,-0.1124064783
+8,Ago,seasonal_gingerbread,Temporada jengibre,true,#2a78d6,#3987e5,0.5172687558,-0.9510140427
+8,Ago,seasonal_pumpkin,Temporada calabaza,true,#eb6834,#d95926,0.5788453904,-0.7887500391
+9,Sep,classic_espresso,Espresso clásico,false,#83827c,#8f8e86,0.8703852265,-0.2002740257
+9,Sep,classic_lungo,Lungo clásico,false,#83827c,#8f8e86,0.967082455,-0.04828919345
+9,Sep,decaf_classic,Descafeinado,false,#83827c,#8f8e86,0.9197639166,-0.1206644947
+9,Sep,decaf_vanilla,Descaf. vainilla,false,#83827c,#8f8e86,0.8428702801,-0.2466174811
+9,Sep,intense_10,Intenso 10,false,#83827c,#8f8e86,0.8129003441,-0.2988495961
+9,Sep,intense_12,Intenso 12,false,#83827c,#8f8e86,0.7999627074,-0.3219953488
+9,Sep,intense_8,Intenso 8,false,#83827c,#8f8e86,0.811063289,-0.3021135995
+9,Sep,origin_brazil,Origen Brasil,false,#83827c,#8f8e86,0.8324042541,-0.2646437567
+9,Sep,origin_colombia,Origen Colombia,false,#83827c,#8f8e86,0.8253158688,-0.2769817148
+9,Sep,origin_ethiopia,Origen Etiopía,false,#83827c,#8f8e86,0.9178538093,-0.1236637075
+9,Sep,seasonal_gingerbread,Temporada jengibre,true,#2a78d6,#3987e5,0.1440334962,-2.795523733
+9,Sep,seasonal_pumpkin,Temporada calabaza,true,#eb6834,#d95926,2.468329193,1.303534815
+10,Oct,classic_espresso,Espresso clásico,false,#83827c,#8f8e86,0.9137554501,-0.1301199888
+10,Oct,classic_lungo,Lungo clásico,false,#83827c,#8f8e86,0.9338840532,-0.09868465229
+10,Oct,decaf_classic,Descafeinado,false,#83827c,#8f8e86,0.9431918554,-0.0843768344
+10,Oct,decaf_vanilla,Descaf. vainilla,false,#83827c,#8f8e86,0.9904332866,-0.01386829325
+10,Oct,intense_10,Intenso 10,false,#83827c,#8f8e86,0.9356413089,-0.09597253629
+10,Oct,intense_12,Intenso 12,false,#83827c,#8f8e86,0.9135614862,-0.1304262638
+10,Oct,intense_8,Intenso 8,false,#83827c,#8f8e86,0.9638475401,-0.05312313364
+10,Oct,origin_brazil,Origen Brasil,false,#83827c,#8f8e86,1.003277978,0.004721388522
+10,Oct,origin_colombia,Origen Colombia,false,#83827c,#8f8e86,1.000900097,0.001297981411
+10,Oct,origin_ethiopia,Origen Etiopía,false,#83827c,#8f8e86,0.9333419701,-0.09952232338
+10,Oct,seasonal_gingerbread,Temporada jengibre,true,#2a78d6,#3987e5,0.2765432099,-1.854423176
+10,Oct,seasonal_pumpkin,Temporada calabaza,true,#eb6834,#d95926,3.4735779,1.796422452
+11,Nov,classic_espresso,Espresso clásico,false,#83827c,#8f8e86,0.8541068346,-0.2275115565
+11,Nov,classic_lungo,Lungo clásico,false,#83827c,#8f8e86,0.9248860304,-0.1126524952
+11,Nov,decaf_classic,Descafeinado,false,#83827c,#8f8e86,0.9323237604,-0.1010970602
+11,Nov,decaf_vanilla,Descaf. vainilla,false,#83827c,#8f8e86,0.9762632967,-0.034657802
+11,Nov,intense_10,Intenso 10,false,#83827c,#8f8e86,1.021030184,0.03002551623
+11,Nov,intense_12,Intenso 12,false,#83827c,#8f8e86,0.8643712357,-0.2102770315
+11,Nov,intense_8,Intenso 8,false,#83827c,#8f8e86,0.9580297764,-0.06185759801
+11,Nov,origin_brazil,Origen Brasil,false,#83827c,#8f8e86,0.912445453,-0.1321897793
+11,Nov,origin_colombia,Origen Colombia,false,#83827c,#8f8e86,1.0249569,0.03556324489
+11,Nov,origin_ethiopia,Origen Etiopía,false,#83827c,#8f8e86,0.9009514653,-0.1504787054
+11,Nov,seasonal_gingerbread,Temporada jengibre,true,#2a78d6,#3987e5,2.695265075,1.430427167
+11,Nov,seasonal_pumpkin,Temporada calabaza,true,#eb6834,#d95926,2.529078864,1.338612025
+12,Dic,classic_espresso,Espresso clásico,false,#83827c,#8f8e86,0.9564521951,-0.06423523255
+12,Dic,classic_lungo,Lungo clásico,false,#83827c,#8f8e86,1.043275182,0.061119744
+12,Dic,decaf_classic,Descafeinado,false,#83827c,#8f8e86,0.9652071067,-0.05108955691
+12,Dic,decaf_vanilla,Descaf. vainilla,false,#83827c,#8f8e86,1.018738667,0.02678401011
+12,Dic,intense_10,Intenso 10,false,#83827c,#8f8e86,0.9465932698,-0.07918343022
+12,Dic,intense_12,Intenso 12,false,#83827c,#8f8e86,1.16524714,0.2206359719
+12,Dic,intense_8,Intenso 8,false,#83827c,#8f8e86,0.9715441883,-0.04164848015
+12,Dic,origin_brazil,Origen Brasil,false,#83827c,#8f8e86,1.02915498,0.04146025341
+12,Dic,origin_colombia,Origen Colombia,false,#83827c,#8f8e86,1.007179951,0.01032147006
+12,Dic,origin_ethiopia,Origen Etiopía,false,#83827c,#8f8e86,1.09519184,0.1311836026
+12,Dic,seasonal_gingerbread,Temporada jengibre,true,#2a78d6,#3987e5,3.914129862,1.968691622
+12,Dic,seasonal_pumpkin,Temporada calabaza,true,#eb6834,#d95926,1.393393075,0.4786022984

@@ -87,6 +87,8 @@ capsule-club-analytics/
 │   ├── build_report.py
 │   └── templates/
 └── dashboard/
+    ├── export_dashboard_data.py   # analysis/outputs/*.json -> CSV planos; última tarea del DAG
+    ├── README.md                  # diccionario de datos: grano, columnas y origen de cada CSV
     └── data/                      # CSV para el dashboard de Claude (prompt 16), versionar
 ```
 
@@ -268,6 +270,12 @@ Del informe (`report/`), las decisiones que no hay que deshacer sin querer:
 - **Ninguna cifra de la prosa del informe está escrita a mano**: todas se
   formatean desde los JSON, así que el informe no puede desincronizarse de los
   notebooks.
+- **Cada KPI y cada recomendación de `content.py` lleva su cifra cruda** (`id`,
+  `raw`, `unit`, `period` en los KPI; `id`, `metric`, `metric_unit`,
+  `metric_label` y, en la portada, `same_as` en las recomendaciones). El
+  informe no las pinta; `dashboard/export_dashboard_data.py` las exporta, así
+  que el dashboard no recalcula nada. Un KPI o una recomendación nuevos sin esas
+  claves rompen la exportación.
 - Tres cosas que se arreglaron *después* de mirar el render, y que conviene
   volver a mirar si se toca algo: `select_autoescape` sólo mira la extensión, y
   con plantillas `.j2` el escapado queda apagado y la primera comilla simple de

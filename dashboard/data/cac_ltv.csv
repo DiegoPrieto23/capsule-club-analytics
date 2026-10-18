@@ -1,0 +1,7 @@
+channel,channel_label,color,color_dark,is_priced,cac_loaded_eur,cac_attributed_eur,ltv_projected_eur,ltv_observed_mature_eur,ratio,payback_months,arpu_month_eur,expected_months,retention_12m_pct,subscriptions,conversions_attributed,breakeven_margin_pct,verdict,unpriced_reason,target_ratio,target_payback_months
+paid_social,Paid social,#2a78d6,#3987e5,true,14.43911044,9.999690076,539.067053,550.8099706,37.33381326,0.5655237255,25.5322806,21.11315716,64.56692913,990,1143.552441,8.035610986,Escalar,,3,12
+podcast_ads,Podcast,#eda100,#c98500,true,13.51970373,10.26935455,454.9634178,572.8852672,33.65187781,0.5203252568,25.98317793,17.50992196,54.4,419,679.5392996,8.914807122,Escalar,,3,12
+influencer_code,Código influencer,#e87ba4,#d55181,true,19.09312072,15.06715987,411.4192052,536.0969939,21.54803351,0.7626885867,25.03396675,16.43443923,52.46636771,560,861.0342037,13.92238414,Mantener y vigilar la retención,,3,12
+referral,Referido,#008300,#008300,true,40.57444922,31.41135064,480.0427394,552.2740667,11.83115849,1.636896868,24.78741942,19.36638628,56.84210526,499,556.5551828,25.35677298,Revisar el coste,,3,12
+direct_unknown,Directo / sin resolver,#83827c,#8f8e86,false,,,483.786338,,,,,,60.4249668,1401,,,,No es un canal sino el cajón de las altas sin touchpoint resuelto.,3,12
+organic,Orgánico,#4a3aa7,#9085e9,false,,,443.0026844,,,,,,58.94039735,914,,,,"Sin coste de medios en el dataset: su coste real (contenido, SEO, marca) no está modelado.",3,12

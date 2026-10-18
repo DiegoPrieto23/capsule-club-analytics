@@ -32,8 +32,16 @@ def _arpu(cohorts):
         sum(r["suscripciones"] for r in rows)
 
 
-def build(data, fmt, Figure, table):
-    """Devuelve la lista de páginas. `fmt` trae los formateadores de número."""
+def build(data, fmt, Figure, table, enrich=True):
+    """
+    Devuelve la lista de páginas. `fmt` trae los formateadores de número.
+
+    Cada indicador y cada recomendación llevan, además del texto formateado, su
+    cifra sin formatear (`raw` / `metric`), la unidad y el periodo: el informe
+    no los pinta y `dashboard/export_dashboard_data.py` los exporta, así que el
+    dashboard sale de la misma cifra que el informe. Con `enrich=False` el texto
+    se devuelve sin pasar por `rich()`, con el marcado `**` y `[[...]]` crudo.
+    """
     eur, num, pct, ratio, month_es = (fmt["eur"], fmt["num"], fmt["pct"],
                                       fmt["ratio"], fmt["month_es"])
     subs, ing, cap = data["suscriptores"], data["ingresos"], data["capsulas"]
@@ -53,7 +61,10 @@ def build(data, fmt, Figure, table):
                    / sum(r["gap_total_pp"] for r in _gap_rows) * 100)
 
     # --- cifras derivadas que sostienen las recomendaciones -----------------
-    involuntary = 274                       # dim_subscriptions.is_involuntary_churn
+    # Bajas por fallo de cobro, regaladas o no: el notebook 04 las cuenta por motivo.
+    involuntary = sum(
+        r["no regalada"] + r["regalada"] for r in coh["gifted"]["cancel_reason_mix"]
+        if r["cancel_reason"] == "involuntary_payment_failure")
     involuntary_year = involuntary / 3      # el histórico son tres años
     involuntary_value = involuntary_year * blended["ltv_weighted_eur"]
     discount_gap_eur = 128.0                # LTV perdido por alta con descuento (página 5)
@@ -87,6 +98,13 @@ def build(data, fmt, Figure, table):
     cap_yoy = cap_12m / prev_12(cap["series"]["total"], "units") - 1
     seasonal_share = sum(f["share_pct"] for f in cap["flavors"] if f["is_seasonal"])
 
+    # Periodo de cada indicador, (desde, hasta), con los meses por su primer día
+    # como en todas las series. El de coste acaba en el corte de censura.
+    history = (ing["meta"]["history_start"], ing["meta"]["history_end"])
+    last_month = (subs_series[-1]["date"],) * 2
+    last_12m = (subs_series[-12]["date"], subs_series[-1]["date"])
+    cost_window = (history[0], att["meta"]["censoring_cutoff"][:8] + "01")
+
 
     # --- tablas equivalentes -----------------------------------------------
     # Cada gráfico lleva la suya en un `<details>`: el color nunca puede ser la
@@ -103,15 +121,15 @@ def build(data, fmt, Figure, table):
     TBL["subs-history"] = table(
         ["Mes", "Suscriptores activos"],
         [[month_es(r["date"]), num(r["suscriptores"])] for r in subs_series])
-    _ing_ch = ["suscripcion", "online", "tienda", "maquina"]
+    _ing_ch = list(T.REVENUE_CHANNEL_SLOT)
     TBL["resumen-ingresos"] = table(
-        ["Mes", "Suscripción", "Tienda online", "Boutique", "Máquinas", "Total"],
+        ["Mes"] + [T.REVENUE_CHANNEL_LABEL[c] for c in _ing_ch] + ["Total"],
         [[month_es(ing["series"]["total"][i]["date"])]
          + [eur(ing["series"][c][i]["eur"]) for c in _ing_ch]
          + [eur(ing["series"]["total"][i]["eur"])]
          for i in range(len(ing["series"]["total"]))])
     TBL["ing-mix"] = table(
-        ["Mes", "Suscripción", "Tienda online", "Boutique", "Máquinas"],
+        ["Mes"] + [T.REVENUE_CHANNEL_LABEL[c] for c in _ing_ch],
         [[month_es(r["date"]), pct(r["suscripcion"]), pct(r["online"]),
           pct(r["tienda"]), pct(r["maquina"])]
          for r in ing["channel_mix"]["by_month_pct"]])
@@ -180,22 +198,29 @@ def build(data, fmt, Figure, table):
         "summary": ("Tres años de un club de cápsulas por suscripción, con tienda online, "
                     "boutiques y venta de máquinas. Seis análisis encadenados y un plan de "
                     "acción con lo que conviene cambiar."),
-        "hero": {"value": eur(ing["meta"]["total_revenue_eur"]),
+        "hero": {"id": "revenue_total", "raw": ing["meta"]["total_revenue_eur"], "unit": "eur", "period": history,
+                 "value": eur(ing["meta"]["total_revenue_eur"]),
                  "label": "ingreso acumulado del histórico, en cuatro canales",
                  "note": f"{month_es(ing['meta']['history_start'])} – "
                          f"{month_es(ing['meta']['history_end'])}"},
         "kpis": [
-            {"label": "Suscriptores activos", "value": num(subs_last),
+            {"id": "active_subscribers", "raw": subs_last, "unit": "count", "period": last_month,
+             "label": "Suscriptores activos", "value": num(subs_last),
              "note": "netos de pausas, último mes"},
-            {"label": "Crecimiento interanual", "value": pct(subs_yoy * 100, 0),
+            {"id": "subscribers_yoy", "raw": subs_yoy * 100, "unit": "pct", "period": last_month,
+             "label": "Crecimiento interanual", "value": pct(subs_yoy * 100, 0),
              "note": "suscriptores activos frente al mismo mes del año anterior"},
-            {"label": "CAC cargado", "value": eur(blended["cac_loaded_eur"], 2),
+            {"id": "cac_loaded", "raw": blended["cac_loaded_eur"], "unit": "eur", "period": cost_window,
+             "label": "CAC cargado", "value": eur(blended["cac_loaded_eur"], 2),
              "note": "incluye el gasto que no se puede asignar"},
-            {"label": "LTV por suscriptor", "value": eur(blended["ltv_weighted_eur"]),
+            {"id": "ltv_projected", "raw": blended["ltv_weighted_eur"], "unit": "eur", "period": history,
+             "label": "LTV por suscriptor", "value": eur(blended["ltv_weighted_eur"]),
              "note": "proyectado a 36 meses"},
-            {"label": "Payback", "value": f"{num(blended['slowest_payback_months'], 1)} meses",
+            {"id": "payback_slowest", "raw": blended["slowest_payback_months"], "unit": "months", "period": cost_window,
+             "label": "Payback", "value": f"{num(blended['slowest_payback_months'], 1)} meses",
              "note": "el canal más lento; el objetivo habitual son 12"},
-            {"label": "Valor recuperable", "value": eur(involuntary_value + cens["lost_demand"]["eur"]),
+            {"id": "recoverable_value_year", "raw": involuntary_value + cens["lost_demand"]["eur"], "unit": "eur", "period": history,
+             "label": "Valor recuperable", "value": eur(involuntary_value + cens["lost_demand"]["eur"]),
              "note": "al año, sólo con los dos primeros puntos del plan"},
         ],
         "glossary": entries(["ltv", "cac", "payback", "churn", "pausa"]),
@@ -250,7 +275,10 @@ def build(data, fmt, Figure, table):
                       "devuelven frente a lo que cuestan. Cada uno se desarrolla en su "
                       "página."),
             "steps": [
-                {"do": "Rescatar las bajas por fallo de cobro antes de que se conviertan en baja.",
+                {"id": "plan_payment_rescue", "same_as": "subs_payment_rescue",
+                 "metric": involuntary_value, "metric_unit": "eur",
+                 "metric_label": "valor de vida recuperable al año",
+                 "do": "Rescatar las bajas por fallo de cobro antes de que se conviertan en baja.",
                  "why": (f"{involuntary} suscripciones se perdieron en tres años porque falló "
                          f"el cobro, no porque el cliente decidiera irse. Son unas "
                          f"{num(involuntary_year, 0)} al año y no hay ningún intento visible "
@@ -258,7 +286,10 @@ def build(data, fmt, Figure, table):
                  "impact": f"unos {eur(involuntary_value)} al año de valor de vida",
                  "owner": "Producto / Growth", "effort": "bajo",
                  "measure": "% de fallos de cobro recuperados en 14 días"},
-                {"do": "Arreglar la identificación del cliente en la parte alta del embudo.",
+                {"id": "plan_identity", "same_as": "att_identity_capture",
+                 "metric": gap["orphan_cost_eur"], "metric_unit": "eur",
+                 "metric_label": "gasto de marketing sin cliente asociado",
+                 "do": "Arreglar la identificación del cliente en la parte alta del embudo.",
                  "why": (f"El {pct(gap['orphan_touchpoints_pct'])} de los contactos de "
                          f"marketing no se logra unir a ninguna persona, y con ellos el "
                          f"{pct(gap['orphan_cost_pct'])} del gasto "
@@ -267,7 +298,10 @@ def build(data, fmt, Figure, table):
                  "impact": f"{eur(gap['orphan_cost_eur'])} de gasto pasa a ser gestionable",
                  "owner": "Marketing / Datos", "effort": "medio",
                  "measure": "% de touchpoints que resuelven a cliente"},
-                {"do": f"Subir la inversión en {best_channel['label'].lower()} y "
+                {"id": "plan_scale_budget", "same_as": "cx_scale_budget",
+                 "metric": blended["slowest_payback_months"], "metric_unit": "months",
+                 "metric_label": "payback del canal más lento",
+                 "do": f"Subir la inversión en {best_channel['label'].lower()} y "
                        f"{cheapest['label'].lower()}, por tramos y midiendo el coste marginal.",
                  "why": (f"El canal más lento en devolver lo que costó tarda "
                          f"{num(blended['slowest_payback_months'], 1)} meses, frente a los "
@@ -278,7 +312,10 @@ def build(data, fmt, Figure, table):
                  "impact": "el techo de crecimiento sube, no el coste unitario",
                  "owner": "Marketing", "effort": "medio",
                  "measure": "CAC marginal a cada escalón de presupuesto"},
-                {"do": "Fijar stock de seguridad por sabor con la demanda de su mes pico, no "
+                {"id": "plan_safety_stock", "same_as": "cap_safety_stock",
+                 "metric": cens["lost_demand"]["eur"], "metric_unit": "eur",
+                 "metric_label": "venta perdida por roturas de stock",
+                 "do": "Fijar stock de seguridad por sabor con la demanda de su mes pico, no "
                        "con la media.",
                  "why": (f"Seis roturas de stock dejaron sin vender "
                          f"{eur(cens['lost_demand']['eur'])} de demanda real, y tres de ellas "
@@ -287,7 +324,10 @@ def build(data, fmt, Figure, table):
                  "impact": f"unos {eur(cens['lost_demand']['eur'])} al año de venta recuperable",
                  "owner": "Operaciones", "effort": "bajo",
                  "measure": "días de rotura por sabor y mes"},
-                {"do": "Medir qué aporta el descuento de bienvenida antes de seguir pagándolo.",
+                {"id": "plan_discount_test", "same_as": "coh_discount_test",
+                 "metric": discount_total, "metric_unit": "eur",
+                 "metric_label": "valor de vida en juego por el descuento de bienvenida",
+                 "do": "Medir qué aporta el descuento de bienvenida antes de seguir pagándolo.",
                  "why": (f"El descuento cuesta 5,1 meses de vida del cliente, unos "
                          f"{eur(discount_gap_eur, 0)} de valor por alta y "
                          f"{eur(discount_total)} sobre las "
@@ -321,18 +361,23 @@ def build(data, fmt, Figure, table):
         "summary": ("Cuántos hay, cómo ha crecido la base y dónde está su estacionalidad. Con "
                     "las pausas tratadas como lo que son —una parada, no una baja— y el fallo "
                     "de cobro separado de la decisión del cliente."),
-        "hero": {"value": num(subs_last),
+        "hero": {"id": "active_subscribers", "raw": subs_last, "unit": "count", "period": last_month,
+                 "value": num(subs_last),
                  "label": f"suscriptores activos netos de pausas en "
                           f"{month_es(subs_series[-1]['date'])}",
                  "note": f"un {pct(subs_yoy * 100, 0)} más que un año antes"},
         "kpis": [
-            {"label": "Crecimiento interanual", "value": pct(subs_yoy * 100, 0),
+            {"id": "subscribers_yoy", "raw": subs_yoy * 100, "unit": "pct", "period": last_month,
+             "label": "Crecimiento interanual", "value": pct(subs_yoy * 100, 0),
              "note": "frente al mismo mes del año anterior"},
-            {"label": "Altas en 12 meses", "value": num(signups_12m),
+            {"id": "signups_12m", "raw": signups_12m, "unit": "count", "period": last_12m,
+             "label": "Altas en 12 meses", "value": num(signups_12m),
              "note": "suscripciones nuevas del último año"},
-            {"label": "Pausa en agosto", "value": pct(pause_rate["pct_paused"]),
+            {"id": "paused_august_pct", "raw": pause_rate["pct_paused"], "unit": "pct", "period": history,
+             "label": "Pausa en agosto", "value": pct(pause_rate["pct_paused"]),
              "note": "de la base, media de los tres agostos; vuelve en otoño"},
-            {"label": "Bajas por fallo de cobro", "value": num(involuntary),
+            {"id": "involuntary_churn", "raw": involuntary, "unit": "count", "period": history,
+             "label": "Bajas por fallo de cobro", "value": num(involuntary),
              "note": "en tres años; no las decidió el cliente"},
         ],
         "glossary": entries(["churn", "pausa", "estacionalidad"]),
@@ -373,7 +418,10 @@ def build(data, fmt, Figure, table):
         ],
         "actions": {
             "steps": [
-                {"do": "Montar un rescate de cobro: reintento escalonado y aviso al cliente "
+                {"id": "subs_payment_rescue",
+                 "metric": involuntary_value, "metric_unit": "eur",
+                 "metric_label": "valor de vida recuperable al año",
+                 "do": "Montar un rescate de cobro: reintento escalonado y aviso al cliente "
                        "antes de dar de baja.",
                  "why": (f"{involuntary} de las cancelaciones del histórico son por fallo de "
                          "cobro. Esos clientes no decidieron irse: se fueron porque una "
@@ -382,7 +430,10 @@ def build(data, fmt, Figure, table):
                  "impact": f"unos {eur(involuntary_value)} al año de valor de vida",
                  "owner": "Producto / Growth", "effort": "bajo",
                  "measure": "% de fallos recuperados en 14 días"},
-                {"do": "Convertir la pausa en un producto con fecha de vuelta en vez de un "
+                {"id": "subs_pause_product",
+                 "metric": pause["mrr_withdrawn_eur"], "metric_unit": "eur",
+                 "metric_label": "cuota aparcada en pausas",
+                 "do": "Convertir la pausa en un producto con fecha de vuelta en vez de un "
                        "limbo.",
                  "why": (f"En un agosto medio el {pct(pause_rate['pct_paused'])} de la "
                          f"base está en pausa y {eur(pause['mrr_withdrawn_eur'])} de cuota quedan "
@@ -405,17 +456,22 @@ def build(data, fmt, Figure, table):
         "summary": ("El ingreso de los cuatro canales, cómo cambia su reparto y la "
                     "imperfección que sólo aparece si se elige bien el denominador: una "
                     "semana sin datos de cobro a mitad del histórico."),
-        "hero": {"value": eur(ing_12m),
+        "hero": {"id": "revenue_12m", "raw": ing_12m, "unit": "eur", "period": last_12m,
+                 "value": eur(ing_12m),
                  "label": "ingreso de los últimos doce meses, en cuatro canales",
                  "note": f"un {pct(ing_yoy * 100, 0)} más que los doce meses anteriores"},
         "kpis": [
-            {"label": "Ingreso acumulado", "value": eur(ing["meta"]["total_revenue_eur"]),
+            {"id": "revenue_total", "raw": ing["meta"]["total_revenue_eur"], "unit": "eur", "period": history,
+             "label": "Ingreso acumulado", "value": eur(ing["meta"]["total_revenue_eur"]),
              "note": "tres años, cuatro canales"},
-            {"label": "Último mes", "value": eur(ing_last),
+            {"id": "revenue_last_month", "raw": ing_last, "unit": "eur", "period": last_month,
+             "label": "Último mes", "value": eur(ing_last),
              "note": month_es(ing["meta"]["history_end"])},
-            {"label": "Crecimiento interanual", "value": pct(ing_yoy * 100, 0),
+            {"id": "revenue_yoy", "raw": ing_yoy * 100, "unit": "pct", "period": last_12m,
+             "label": "Crecimiento interanual", "value": pct(ing_yoy * 100, 0),
              "note": "últimos doce meses frente a los doce anteriores"},
-            {"label": "Hueco de cobro", "value": month_es(gapm["detected_month"]),
+            {"id": "payment_gap_cash_drop", "raw": gapm["drop_vs_median_pct"], "unit": "pct", "period": (gapm["detected_month"],) * 2,
+             "label": "Hueco de cobro", "value": month_es(gapm["detected_month"]),
              "note": f"la caja cae un {pct(gapm['drop_vs_median_pct'])} sin que baje el MRR"},
         ],
         "glossary": entries(["mrr", "estacionalidad"]),
@@ -450,7 +506,10 @@ def build(data, fmt, Figure, table):
         ],
         "actions": {
             "steps": [
-                {"do": "Poner un control diario del cociente caja / cuota contratada con "
+                {"id": "ing_cash_ratio_alert",
+                 "metric": gapm["drop_vs_median_pct"], "metric_unit": "pct",
+                 "metric_label": "caída del cociente caja / MRR en el mes del hueco",
+                 "do": "Poner un control diario del cociente caja / cuota contratada con "
                        "umbral de alerta.",
                  "why": ("La semana de cobros que se perdió en la migración de pasarela no "
                          "se ve en el importe total —la serie crece demasiado— pero deja el "
@@ -460,7 +519,10 @@ def build(data, fmt, Figure, table):
                  "impact": "detecta en 24 h lo que tardó meses en aparecer",
                  "owner": "Datos / Finanzas", "effort": "bajo",
                  "measure": "alertas disparadas y falsos positivos"},
-                {"do": "Dimensionar la plantilla de boutique con su propio calendario.",
+                {"id": "ing_boutique_staffing",
+                 "metric": ing["channel_decomposition_strength"]["tienda"]["seasonal"], "metric_unit": "index",
+                 "metric_label": "fuerza estacional de la boutique (0 a 1)",
+                 "do": "Dimensionar la plantilla de boutique con su propio calendario.",
                  "why": ("La boutique es el canal más estacional del negocio y la "
                          "suscripción el menos, y además hacen techo en meses distintos. "
                          "Planificar las tiendas con el calendario del agregado las deja "
@@ -480,17 +542,22 @@ def build(data, fmt, Figure, table):
         "summary": ("Doce sabores y dos ritmos de demanda muy distintos, que son el "
                     "calendario de compras. Con las roturas de stock detectadas y "
                     "descontadas, porque si no la demanda real parece menor de lo que es."),
-        "hero": {"value": num(cap_12m),
+        "hero": {"id": "capsule_units_12m", "raw": cap_12m, "unit": "units", "period": last_12m,
+                 "value": num(cap_12m),
                  "label": "cápsulas vendidas en los últimos doce meses, club y tienda",
                  "note": f"un {pct(cap_yoy * 100, 0)} más que los doce meses anteriores"},
         "kpis": [
-            {"label": "Unidades del histórico", "value": num(cap["meta"]["total_units"]),
+            {"id": "capsule_units_total", "raw": cap["meta"]["total_units"], "unit": "units", "period": history,
+             "label": "Unidades del histórico", "value": num(cap["meta"]["total_units"]),
              "note": "club + tienda, doce sabores"},
-            {"label": "Roturas detectadas", "value": str(cens["detection"]["n_detected"]),
+            {"id": "stockouts_detected", "raw": cens["detection"]["n_detected"], "unit": "count", "period": history,
+             "label": "Roturas detectadas", "value": str(cens["detection"]["n_detected"]),
              "note": f"de {cens['detection']['n_runs_tested']} candidatas, sin falsos positivos"},
-            {"label": "Venta perdida", "value": eur(cens["lost_demand"]["eur"]),
+            {"id": "stockout_lost_sales", "raw": cens["lost_demand"]["eur"], "unit": "eur", "period": history,
+             "label": "Venta perdida", "value": eur(cens["lost_demand"]["eur"]),
              "note": "demanda real que no se pudo servir"},
-            {"label": "Peso de la temporada", "value": pct(seasonal_share),
+            {"id": "seasonal_flavours_share", "raw": seasonal_share, "unit": "pct", "period": history,
+             "label": "Peso de la temporada", "value": pct(seasonal_share),
              "note": "del volumen, en los dos sabores de temporada"},
         ],
         "glossary": entries(["censura", "estacionalidad"]),
@@ -534,7 +601,10 @@ def build(data, fmt, Figure, table):
         ],
         "actions": {
             "steps": [
-                {"do": "Fijar el stock de seguridad de cada sabor con la demanda de su mes "
+                {"id": "cap_safety_stock",
+                 "metric": cens["lost_demand"]["eur"], "metric_unit": "eur",
+                 "metric_label": "venta perdida por roturas de stock",
+                 "do": "Fijar el stock de seguridad de cada sabor con la demanda de su mes "
                        "pico, no con la media.",
                  "why": (f"Las seis roturas costaron {eur(cens['lost_demand']['eur'])} de "
                          "venta que sí existía, y cayeron sobre sabores de base, que son los "
@@ -543,7 +613,10 @@ def build(data, fmt, Figure, table):
                  "impact": f"unos {eur(cens['lost_demand']['eur'])} al año de venta recuperable",
                  "owner": "Operaciones / Compras", "effort": "bajo",
                  "measure": "días de rotura por sabor y nivel de servicio"},
-                {"do": "Cerrar la compra de los sabores de temporada con seis meses de "
+                {"id": "cap_seasonal_buying",
+                 "metric": cap["seasonal_profile"]["regimes"]["seasonal"]["seasonal_gingerbread"]["amplitude_pct"], "metric_unit": "pct",
+                 "metric_label": "amplitud estacional de jengibre, pico frente a valle",
+                 "do": "Cerrar la compra de los sabores de temporada con seis meses de "
                        "antelación y un margen generoso.",
                  "why": ("Calabaza concentra su año en octubre y jengibre en diciembre, así "
                          "que el calendario se conoce con medio año de margen. Lo que no se "
@@ -552,7 +625,10 @@ def build(data, fmt, Figure, table):
                  "impact": "evita quedarse sin el producto que más margen deja en su pico",
                  "owner": "Compras", "effort": "medio",
                  "measure": "cobertura en el mes pico y sobrante en enero"},
-                {"do": "Alertar automáticamente cuando un sabor deje de venderse en tienda "
+                {"id": "cap_stockout_alert",
+                 "metric": cens["detection"]["n_detected"], "metric_unit": "count",
+                 "metric_label": "roturas detectadas a posteriori",
+                 "do": "Alertar automáticamente cuando un sabor deje de venderse en tienda "
                        "mientras el club lo sigue enviando.",
                  "why": ("Esa combinación es la firma exacta de una rotura de stock y se "
                          "detectó a posteriori con ella. Como regla automática, avisa el "
@@ -567,6 +643,7 @@ def build(data, fmt, Figure, table):
     # ==================================================== 4. cohortes y RFM
     at_risk = segments["En riesgo"]
     champions = segments["Campeones"]
+    base_12m = next(r["retention"] for r in coh["retention"]["base"] if r["age"] == 12) * 100
     pages.append({
         "slug": "cohortes", "file": "04-cohortes.html", "nav_title": "Cohortes y RFM",
         "eyebrow": "Comportamiento de cliente",
@@ -575,14 +652,17 @@ def build(data, fmt, Figure, table):
                     "grupos de compradores merecen una acción distinta. Con el descuento de "
                     "bienvenida y el regalo separados, porque se comportan de otra manera."),
         "kpis": [
-            {"label": "Suscripciones analizadas", "value": num(coh["meta"]["n_subscriptions"]),
+            {"id": "subscriptions_analysed", "raw": coh["meta"]["n_subscriptions"], "unit": "count", "period": history,
+             "label": "Suscripciones analizadas", "value": num(coh["meta"]["n_subscriptions"]),
              "note": f"{pct(coh['meta']['right_censored_pct'])} siguen activas"},
-            {"label": "Siguen al año", "value": pct(
-                next(r["retention"] for r in coh["retention"]["base"] if r["age"] == 12) * 100),
+            {"id": "retention_12m", "raw": base_12m, "unit": "pct", "period": history,
+             "label": "Siguen al año", "value": pct(base_12m),
              "note": "sin contar regaladas"},
-            {"label": "Coste del descuento", "value": eur(discount_gap_eur, 0),
+            {"id": "discount_ltv_cost", "raw": discount_gap_eur, "unit": "eur", "period": history,
+             "label": "Coste del descuento", "value": eur(discount_gap_eur, 0),
              "note": "de valor por alta que lo lleva"},
-            {"label": "Clientes en riesgo", "value": num(at_risk["clientes"]),
+            {"id": "at_risk_customers", "raw": at_risk["clientes"], "unit": "count", "period": last_month,
+             "label": "Clientes en riesgo", "value": num(at_risk["clientes"]),
              "note": f"{pct(at_risk['pct_ingreso'])} del ingreso de tienda, "
                      f"{num(at_risk['recencia_mediana'], 0)} días sin comprar"},
         ],
@@ -670,7 +750,10 @@ def build(data, fmt, Figure, table):
         ],
         "actions": {
             "steps": [
-                {"do": "Medir qué aporta el descuento de bienvenida, o moverlo al tercer mes.",
+                {"id": "coh_discount_test",
+                 "metric": discount_total, "metric_unit": "eur",
+                 "metric_label": "valor de vida en juego por el descuento de bienvenida",
+                 "do": "Medir qué aporta el descuento de bienvenida, o moverlo al tercer mes.",
                  "why": (f"Hoy sabemos lo que cuesta —5,1 meses de vida, unos "
                          f"{eur(discount_gap_eur, 0)} por alta, {eur(discount_total)} sobre "
                          f"las {num(disc['n_with_discount'])} altas que lo llevaron— pero no "
@@ -680,7 +763,10 @@ def build(data, fmt, Figure, table):
                  "impact": f"hasta {eur(discount_total)} de valor en juego",
                  "owner": "Growth", "effort": "bajo",
                  "measure": "altas y retención a 90 días, con y sin descuento"},
-                {"do": f"Lanzar una recuperación sobre los {num(at_risk['clientes'])} clientes "
+                {"id": "coh_at_risk_winback",
+                 "metric": at_risk["gasto_total"], "metric_unit": "eur",
+                 "metric_label": "facturación histórica del segmento en riesgo",
+                 "do": f"Lanzar una recuperación sobre los {num(at_risk['clientes'])} clientes "
                        "en riesgo antes de que se enfríen del todo.",
                  "why": (f"Son el {pct(at_risk['pct_clientes'])} de los clientes y el "
                          f"{pct(at_risk['pct_ingreso'])} del ingreso de tienda, con un gasto "
@@ -690,7 +776,10 @@ def build(data, fmt, Figure, table):
                  "impact": f"{eur(at_risk['gasto_total'])} de facturación histórica en ese grupo",
                  "owner": "CRM", "effort": "bajo",
                  "measure": "% del segmento que vuelve a comprar en 60 días"},
-                {"do": f"Ofrecer suscripción a los ~{num(champions_no_sub)} campeones de "
+                {"id": "coh_champions_upsell",
+                 "metric": champions_no_sub, "metric_unit": "count",
+                 "metric_label": "campeones de tienda sin suscripción",
+                 "do": f"Ofrecer suscripción a los ~{num(champions_no_sub)} campeones de "
                        "tienda que todavía no son suscriptores.",
                  "why": ("Ser buen comprador de tienda y ser suscriptor resultan ser cosas "
                          "independientes: la proporción de suscriptores es prácticamente la "
@@ -700,7 +789,10 @@ def build(data, fmt, Figure, table):
                  "impact": f"~{num(champions_no_sub)} clientes con intención ya demostrada",
                  "owner": "CRM / Growth", "effort": "bajo",
                  "measure": "conversión a suscripción del grupo objetivo"},
-                {"do": "Tratar el regalo como un canal con su propia conversión al terminar "
+                {"id": "coh_gift_conversion",
+                 "metric": coh["gifted"]["cliff_months_3_to_6_pp"], "metric_unit": "pp",
+                 "metric_label": "caída de retención de los regalos entre los meses 3 y 6",
+                 "do": "Tratar el regalo como un canal con su propia conversión al terminar "
                        "el término.",
                  "why": ("Las suscripciones regaladas aguantan mejor que ninguna hasta el "
                          "mes 3 y se desploman al acabar el regalo, estabilizándose en torno "
@@ -722,13 +814,17 @@ def build(data, fmt, Figure, table):
                     "cuánto cambia la respuesta según cuál se elija. Cambia mucho menos que "
                     "los tres problemas de datos que hay que arreglar antes."),
         "kpis": [
-            {"label": "Contactos de marketing", "value": num(att["meta"]["n_touchpoints_total"]),
+            {"id": "touchpoints_total", "raw": att["meta"]["n_touchpoints_total"], "unit": "count", "period": history,
+             "label": "Contactos de marketing", "value": num(att["meta"]["n_touchpoints_total"]),
              "note": "en el histórico completo"},
-            {"label": "Sin cliente asociado", "value": pct(gap["orphan_touchpoints_pct"]),
+            {"id": "orphan_touchpoints_pct", "raw": gap["orphan_touchpoints_pct"], "unit": "pct", "period": cost_window,
+             "label": "Sin cliente asociado", "value": pct(gap["orphan_touchpoints_pct"]),
              "note": f"se llevan {eur(gap['orphan_cost_eur'])} de gasto"},
-            {"label": "Altas sin rastro", "value": pct(gap["conversions_without_touchpoint_pct"]),
+            {"id": "signups_without_touchpoint_pct", "raw": gap["conversions_without_touchpoint_pct"], "unit": "pct", "period": cost_window,
+             "label": "Altas sin rastro", "value": pct(gap["conversions_without_touchpoint_pct"]),
              "note": "aparecen sin ningún contacto previo"},
-            {"label": "CAC infravalorado", "value": pct(gap["understatement_pct"], 0),
+            {"id": "cac_understatement_pct", "raw": gap["understatement_pct"], "unit": "pct", "period": cost_window,
+             "label": "CAC infravalorado", "value": pct(gap["understatement_pct"], 0),
              "note": f"{eur(gap['cac_attributable_eur'], 2)} frente a "
                      f"{eur(gap['cac_loaded_eur'], 2)} reales"},
         ],
@@ -794,7 +890,10 @@ def build(data, fmt, Figure, table):
         ],
         "actions": {
             "steps": [
-                {"do": "Arreglar la captura de identidad en la parte alta del embudo.",
+                {"id": "att_identity_capture",
+                 "metric": gap["orphan_cost_eur"], "metric_unit": "eur",
+                 "metric_label": "gasto de marketing sin cliente asociado",
+                 "do": "Arreglar la captura de identidad en la parte alta del embudo.",
                  "why": (f"El {pct(gap['orphan_touchpoints_pct'])} de los contactos no se "
                          f"puede unir a ninguna persona y arrastra "
                          f"{eur(gap['orphan_cost_eur'])} de gasto. Y no afecta por igual: en "
@@ -804,7 +903,10 @@ def build(data, fmt, Figure, table):
                  "impact": f"{eur(gap['orphan_cost_eur'])} de gasto pasa a ser optimizable",
                  "owner": "Marketing / Datos", "effort": "medio",
                  "measure": "% de contactos que resuelven a cliente"},
-                {"do": "Publicar el coste de adquisición cargado como métrica oficial, no el "
+                {"id": "att_publish_loaded_cac",
+                 "metric": gap["understatement_pct"], "metric_unit": "pct",
+                 "metric_label": "infravaloración del CAC del reparto",
+                 "do": "Publicar el coste de adquisición cargado como métrica oficial, no el "
                        "del reparto.",
                  "why": (f"El reparto da {eur(gap['cac_attributable_eur'], 2)} y la realidad "
                          f"{eur(gap['cac_loaded_eur'], 2)}: un "
@@ -815,7 +917,10 @@ def build(data, fmt, Figure, table):
                            "todas las decisiones de inversión",
                  "owner": "Marketing", "effort": "bajo",
                  "measure": "coste cargado por canal, mensual"},
-                {"do": "No juzgar paid social con datos de atribución del primer semestre de "
+                {"id": "att_paid_social_test",
+                 "metric": att["ios_att"]["paid_social_change_pct"], "metric_unit": "pct",
+                 "metric_label": "caída del rastreo de paid social en la ventana de 2025",
+                 "do": "No juzgar paid social con datos de atribución del primer semestre de "
                        "2025; medirlo con un test de retención de presupuesto.",
                  "why": ("Durante esos meses su tasa de rastreo cayó del 24% al 8,5% mientras "
                          "el resto de canales no se movía. Los clientes siguieron llegando; "
@@ -838,18 +943,23 @@ def build(data, fmt, Figure, table):
         "summary": ("La división que cierra el informe, canal a canal, con las dos decisiones "
                     "metodológicas puestas a prueba y una lectura incómoda: el problema de "
                     "este negocio no es lo que paga por crecer."),
-        "hero": {"value": f"{num(blended['slowest_payback_months'], 1)} meses",
+        "hero": {"id": "payback_slowest", "raw": blended["slowest_payback_months"], "unit": "months", "period": cost_window,
+                 "value": f"{num(blended['slowest_payback_months'], 1)} meses",
                  "label": "tarda el canal más lento en devolver lo que costó captar un cliente",
                  "note": f"el objetivo habitual en suscripción son "
                          f"{cx['meta']['payback_target_months']} meses"},
         "kpis": [
-            {"label": "Coste por cliente", "value": eur(blended["cac_loaded_eur"], 2),
+            {"id": "cac_loaded", "raw": blended["cac_loaded_eur"], "unit": "eur", "period": cost_window,
+             "label": "Coste por cliente", "value": eur(blended["cac_loaded_eur"], 2),
              "note": "todo el gasto entre todas las altas"},
-            {"label": "Valor por cliente", "value": eur(blended["ltv_weighted_eur"]),
+            {"id": "ltv_projected", "raw": blended["ltv_weighted_eur"], "unit": "eur", "period": history,
+             "label": "Valor por cliente", "value": eur(blended["ltv_weighted_eur"]),
              "note": "proyectado a 36 meses"},
-            {"label": "Peso del marketing", "value": pct(plaus["marketing_intensity_pct"], 2),
+            {"id": "marketing_intensity_pct", "raw": plaus["marketing_intensity_pct"], "unit": "pct", "period": history,
+             "label": "Peso del marketing", "value": pct(plaus["marketing_intensity_pct"], 2),
              "note": f"del ingreso; lo normal es un {plaus['typical_intensity_pct']}%"},
-            {"label": "Canal más caro", "value": eur(referral["cac_loaded_eur"], 2),
+            {"id": "cac_loaded_max", "raw": referral["cac_loaded_eur"], "unit": "eur", "period": cost_window,
+             "label": "Canal más caro", "value": eur(referral["cac_loaded_eur"], 2),
              "note": f"{referral['label']}, casi el triple que la media"},
         ],
         "glossary": entries(["cac", "ltv", "arpu", "payback", "retencion"]),
@@ -915,7 +1025,10 @@ def build(data, fmt, Figure, table):
                       "también las que más supuestos arrastran. Cada recomendación dice de "
                       "cuál depende."),
             "steps": [
-                {"do": f"Subir el presupuesto de {best_channel['label'].lower()} y "
+                {"id": "cx_scale_budget",
+                 "metric": blended["slowest_payback_months"], "metric_unit": "months",
+                 "metric_label": "payback del canal más lento",
+                 "do": f"Subir el presupuesto de {best_channel['label'].lower()} y "
                        f"{cheapest['label'].lower()} por escalones, midiendo el coste de cada "
                        "escalón antes del siguiente.",
                  "why": (f"El canal más lento devuelve lo invertido en "
@@ -927,7 +1040,10 @@ def build(data, fmt, Figure, table):
                  "impact": "el freno del crecimiento deja de ser el presupuesto",
                  "owner": "Dirección / Marketing", "effort": "medio",
                  "measure": "coste por cliente en cada escalón de inversión"},
-                {"do": f"Rediseñar el incentivo de {referral['label'].lower()}.",
+                {"id": "cx_referral_incentive",
+                 "metric": referral_extra, "metric_unit": "eur",
+                 "metric_label": "sobrecoste del referido frente al CAC medio",
+                 "do": f"Rediseñar el incentivo de {referral['label'].lower()}.",
                  "why": (f"Cuesta {eur(referral['cac_loaded_eur'], 2)} por cliente, casi el "
                          f"triple que la media, y es el único canal que dejaría de merecer la "
                          f"pena con un margen razonable: necesita un "
@@ -936,7 +1052,10 @@ def build(data, fmt, Figure, table):
                  "impact": f"unos {eur(referral_extra)} de sobrecoste frente al coste medio",
                  "owner": "Growth", "effort": "bajo",
                  "measure": "coste por referido tras el rediseño, a volumen constante"},
-                {"do": "Auditar con qué creadores y con qué oferta trabaja el código de "
+                {"id": "cx_influencer_audit",
+                 "metric": best_channel["ltv_projected_eur"] - influencer["ltv_projected_eur"], "metric_unit": "eur",
+                 "metric_label": "LTV que el código de influencer deja de ganar frente al mejor canal",
+                 "do": "Auditar con qué creadores y con qué oferta trabaja el código de "
                        "influencer antes de darle más presupuesto.",
                  "why": (f"Es el canal que peor retiene de todos: "
                          f"{pct(influencer['retention_12m_pct'])} sigue al año frente al "
@@ -948,7 +1067,10 @@ def build(data, fmt, Figure, table):
                            "de diferencia de valor por cliente frente al mejor canal",
                  "owner": "Marketing", "effort": "medio",
                  "measure": "retención a 12 meses por creador"},
-                {"do": "Pedir el coste de producto para que estas cifras signifiquen algo.",
+                {"id": "cx_cogs_request",
+                 "metric": blended["ratio"], "metric_unit": "ratio",
+                 "metric_label": "ratio LTV / CAC medio, sin coste de producto",
+                 "do": "Pedir el coste de producto para que estas cifras signifiquen algo.",
                  "why": ("Sin coste de producto, el valor de un cliente es ingreso y no "
                          "margen, y el ratio sale fuera de cualquier rango creíble. Con un "
                          "margen del 30% las cifras vuelven a la normalidad. Es el dato que "
@@ -960,7 +1082,8 @@ def build(data, fmt, Figure, table):
         "takeaways": cx["insights"][:6],
     })
 
-    _enrich(pages)
+    if enrich:
+        _enrich(pages)
     return pages
 
 

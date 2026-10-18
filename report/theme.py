@@ -82,6 +82,10 @@ CHANNEL_LABEL = {
     "podcast_ads": "Podcast",
     "direct_unknown": "Directo / sin resolver",
 }
+# Canales de venta (no de captación): el orden es el de apilado y fija la ranura.
+REVENUE_CHANNEL_SLOT = {"suscripcion": 0, "online": 1, "tienda": 2, "maquina": 3}
+REVENUE_CHANNEL_LABEL = {"suscripcion": "Suscripción", "online": "Tienda online",
+                         "tienda": "Boutique", "maquina": "Máquinas"}
 MODEL_LABEL = {"first_touch": "First touch", "last_touch": "Last touch",
                "linear": "Linear", "markov": "Markov"}
 MONTHS_ES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun",

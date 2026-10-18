@@ -1,0 +1,217 @@
+age_months,channel,channel_label,color,color_dark,retention_pct,is_extrapolated
+0,paid_social,Paid social,#2a78d6,#3987e5,100,false
+1,paid_social,Paid social,#2a78d6,#3987e5,94.20442571,false
+2,paid_social,Paid social,#2a78d6,#3987e5,84.81152993,false
+3,paid_social,Paid social,#2a78d6,#3987e5,82.11382114,false
+4,paid_social,Paid social,#2a78d6,#3987e5,79.5620438,false
+5,paid_social,Paid social,#2a78d6,#3987e5,77.23156533,false
+6,paid_social,Paid social,#2a78d6,#3987e5,74.79338843,false
+7,paid_social,Paid social,#2a78d6,#3987e5,74.11764706,false
+8,paid_social,Paid social,#2a78d6,#3987e5,71.70111288,false
+9,paid_social,Paid social,#2a78d6,#3987e5,70.69846678,false
+10,paid_social,Paid social,#2a78d6,#3987e5,69.28571429,false
+11,paid_social,Paid social,#2a78d6,#3987e5,66.53992395,false
+12,paid_social,Paid social,#2a78d6,#3987e5,64.56692913,false
+13,paid_social,Paid social,#2a78d6,#3987e5,62.78586279,false
+14,paid_social,Paid social,#2a78d6,#3987e5,60.91703057,false
+15,paid_social,Paid social,#2a78d6,#3987e5,60.77981651,false
+16,paid_social,Paid social,#2a78d6,#3987e5,58.02469136,false
+17,paid_social,Paid social,#2a78d6,#3987e5,56.55737705,false
+18,paid_social,Paid social,#2a78d6,#3987e5,53.33333333,false
+19,paid_social,Paid social,#2a78d6,#3987e5,49.83713355,false
+20,paid_social,Paid social,#2a78d6,#3987e5,47.82608696,false
+21,paid_social,Paid social,#2a78d6,#3987e5,47.2,false
+22,paid_social,Paid social,#2a78d6,#3987e5,47.2,false
+23,paid_social,Paid social,#2a78d6,#3987e5,44.94949495,false
+24,paid_social,Paid social,#2a78d6,#3987e5,44.94949495,false
+25,paid_social,Paid social,#2a78d6,#3987e5,44.94949495,false
+26,paid_social,Paid social,#2a78d6,#3987e5,44.94949495,false
+27,paid_social,Paid social,#2a78d6,#3987e5,42.74193548,false
+28,paid_social,Paid social,#2a78d6,#3987e5,42.74193548,false
+29,paid_social,Paid social,#2a78d6,#3987e5,42.74193548,false
+30,paid_social,Paid social,#2a78d6,#3987e5,42.39207852,true
+31,paid_social,Paid social,#2a78d6,#3987e5,42.04508524,true
+32,paid_social,Paid social,#2a78d6,#3987e5,41.70093223,true
+33,paid_social,Paid social,#2a78d6,#3987e5,41.35959621,true
+34,paid_social,Paid social,#2a78d6,#3987e5,41.02105415,true
+35,paid_social,Paid social,#2a78d6,#3987e5,40.68528317,true
+0,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,100,false
+1,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,93.89880952,false
+2,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,84.54968944,false
+3,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,81.49350649,false
+4,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,79.25486876,false
+5,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,77.10736469,false
+6,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,73.71854613,false
+7,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,72.09756098,false
+8,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,69.72193615,false
+9,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,67.76677668,false
+10,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,64.86486486,false
+11,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,61.96473552,false
+12,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,60.4249668,false
+13,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,58.43793584,false
+14,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,56.59259259,false
+15,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,53.77358491,false
+16,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,50.94664372,false
+17,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,49.63099631,false
+18,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,48.50894632,false
+19,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,48.0349345,false
+20,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,44.11764706,false
+21,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,43.32425068,false
+22,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,41.61490683,false
+23,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,36.14035088,false
+24,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,36.14035088,false
+25,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,35.9832636,false
+26,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,35.9832636,false
+27,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,35.44973545,false
+28,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,33.5443038,false
+29,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,32.84671533,false
+30,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,32.33364975,true
+31,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,31.82859825,true
+32,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,31.33143566,true
+33,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,30.84203875,true
+34,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,30.36028621,true
+35,direct_unknown,Directo / sin resolver,#83827c,#8f8e86,29.88605864,true
+0,referral,Referido,#008300,#008300,100,false
+1,referral,Referido,#008300,#008300,93.88753056,false
+2,referral,Referido,#008300,#008300,83.63171355,false
+3,referral,Referido,#008300,#008300,80.85106383,false
+4,referral,Referido,#008300,#008300,78.37078652,false
+5,referral,Referido,#008300,#008300,75.07507508,false
+6,referral,Referido,#008300,#008300,73.61563518,false
+7,referral,Referido,#008300,#008300,69.36619718,false
+8,referral,Referido,#008300,#008300,66.14173228,false
+9,referral,Referido,#008300,#008300,61.96581197,false
+10,referral,Referido,#008300,#008300,60.63348416,false
+11,referral,Referido,#008300,#008300,58.04878049,false
+12,referral,Referido,#008300,#008300,56.84210526,false
+13,referral,Referido,#008300,#008300,55.78947368,false
+14,referral,Referido,#008300,#008300,54.49438202,false
+15,referral,Referido,#008300,#008300,54.49438202,false
+16,referral,Referido,#008300,#008300,52.7607362,false
+17,referral,Referido,#008300,#008300,51.02040816,false
+18,referral,Referido,#008300,#008300,48.12030075,false
+19,referral,Referido,#008300,#008300,47.00854701,false
+20,referral,Referido,#008300,#008300,46.80851064,false
+21,referral,Referido,#008300,#008300,46.80851064,false
+22,referral,Referido,#008300,#008300,44.44444444,false
+23,referral,Referido,#008300,#008300,43.20228597,true
+24,referral,Referido,#008300,#008300,41.99484404,true
+25,referral,Referido,#008300,#008300,40.82114838,true
+26,referral,Referido,#008300,#008300,39.68025583,true
+27,referral,Referido,#008300,#008300,38.57124959,true
+28,referral,Referido,#008300,#008300,37.49323848,true
+29,referral,Referido,#008300,#008300,36.44535624,true
+30,referral,Referido,#008300,#008300,35.42676081,true
+31,referral,Referido,#008300,#008300,34.43663365,true
+32,referral,Referido,#008300,#008300,33.47417913,true
+33,referral,Referido,#008300,#008300,32.53862384,true
+34,referral,Referido,#008300,#008300,31.62921597,true
+35,referral,Referido,#008300,#008300,30.74522475,true
+0,podcast_ads,Podcast,#eda100,#c98500,100,false
+1,podcast_ads,Podcast,#eda100,#c98500,94.0397351,false
+2,podcast_ads,Podcast,#eda100,#c98500,83.57142857,false
+3,podcast_ads,Podcast,#eda100,#c98500,81.06060606,false
+4,podcast_ads,Podcast,#eda100,#c98500,78.45528455,false
+5,podcast_ads,Podcast,#eda100,#c98500,76.65198238,false
+6,podcast_ads,Podcast,#eda100,#c98500,73.80952381,false
+7,podcast_ads,Podcast,#eda100,#c98500,69.04761905,false
+8,podcast_ads,Podcast,#eda100,#c98500,66.30434783,false
+9,podcast_ads,Podcast,#eda100,#c98500,63.37209302,false
+10,podcast_ads,Podcast,#eda100,#c98500,59.87261146,false
+11,podcast_ads,Podcast,#eda100,#c98500,58.27338129,false
+12,podcast_ads,Podcast,#eda100,#c98500,54.4,false
+13,podcast_ads,Podcast,#eda100,#c98500,53.04347826,false
+14,podcast_ads,Podcast,#eda100,#c98500,51,false
+15,podcast_ads,Podcast,#eda100,#c98500,47,false
+16,podcast_ads,Podcast,#eda100,#c98500,46.42857143,false
+17,podcast_ads,Podcast,#eda100,#c98500,44.51548399,true
+18,podcast_ads,Podcast,#eda100,#c98500,42.68122525,true
+19,podcast_ads,Podcast,#eda100,#c98500,40.92254706,true
+20,podcast_ads,Podcast,#eda100,#c98500,39.23633514,true
+21,podcast_ads,Podcast,#eda100,#c98500,37.61960351,true
+22,podcast_ads,Podcast,#eda100,#c98500,36.06948925,true
+23,podcast_ads,Podcast,#eda100,#c98500,34.58324738,true
+24,podcast_ads,Podcast,#eda100,#c98500,33.15824605,true
+25,podcast_ads,Podcast,#eda100,#c98500,31.79196184,true
+26,podcast_ads,Podcast,#eda100,#c98500,30.48197532,true
+27,podcast_ads,Podcast,#eda100,#c98500,29.22596674,true
+28,podcast_ads,Podcast,#eda100,#c98500,28.02171194,true
+29,podcast_ads,Podcast,#eda100,#c98500,26.86707842,true
+30,podcast_ads,Podcast,#eda100,#c98500,25.76002152,true
+31,podcast_ads,Podcast,#eda100,#c98500,24.69858086,true
+32,podcast_ads,Podcast,#eda100,#c98500,23.68087682,true
+33,podcast_ads,Podcast,#eda100,#c98500,22.70510723,true
+34,podcast_ads,Podcast,#eda100,#c98500,21.76954419,true
+35,podcast_ads,Podcast,#eda100,#c98500,20.87253099,true
+0,organic,Orgánico,#4a3aa7,#9085e9,100,false
+1,organic,Orgánico,#4a3aa7,#9085e9,94.37280188,false
+2,organic,Orgánico,#4a3aa7,#9085e9,83.10559006,false
+3,organic,Orgánico,#4a3aa7,#9085e9,80.38461538,false
+4,organic,Orgánico,#4a3aa7,#9085e9,77.79273217,false
+5,organic,Orgánico,#4a3aa7,#9085e9,75.03506311,false
+6,organic,Orgánico,#4a3aa7,#9085e9,72.71364318,false
+7,organic,Orgánico,#4a3aa7,#9085e9,70.85987261,false
+8,organic,Orgánico,#4a3aa7,#9085e9,68.68512111,false
+9,organic,Orgánico,#4a3aa7,#9085e9,66.4825046,false
+10,organic,Orgánico,#4a3aa7,#9085e9,63.20939335,false
+11,organic,Orgánico,#4a3aa7,#9085e9,60.25369979,false
+12,organic,Orgánico,#4a3aa7,#9085e9,58.94039735,false
+13,organic,Orgánico,#4a3aa7,#9085e9,55.65819861,false
+14,organic,Orgánico,#4a3aa7,#9085e9,53.33333333,false
+15,organic,Orgánico,#4a3aa7,#9085e9,51.42857143,false
+16,organic,Orgánico,#4a3aa7,#9085e9,48.70317003,false
+17,organic,Orgánico,#4a3aa7,#9085e9,45.76802508,false
+18,organic,Orgánico,#4a3aa7,#9085e9,43.35664336,false
+19,organic,Orgánico,#4a3aa7,#9085e9,41.50943396,false
+20,organic,Orgánico,#4a3aa7,#9085e9,36.95652174,false
+21,organic,Orgánico,#4a3aa7,#9085e9,36.95652174,false
+22,organic,Orgánico,#4a3aa7,#9085e9,36.95652174,false
+23,organic,Orgánico,#4a3aa7,#9085e9,36.12903226,false
+24,organic,Orgánico,#4a3aa7,#9085e9,34.05797101,false
+25,organic,Orgánico,#4a3aa7,#9085e9,32.25806452,false
+26,organic,Orgánico,#4a3aa7,#9085e9,31.25,false
+27,organic,Orgánico,#4a3aa7,#9085e9,29.89690722,false
+28,organic,Orgánico,#4a3aa7,#9085e9,28.86490487,true
+29,organic,Orgánico,#4a3aa7,#9085e9,27.86852589,true
+30,organic,Orgánico,#4a3aa7,#9085e9,26.90654063,true
+31,organic,Orgánico,#4a3aa7,#9085e9,25.97776184,true
+32,organic,Orgánico,#4a3aa7,#9085e9,25.08104329,true
+33,organic,Orgánico,#4a3aa7,#9085e9,24.2152783,true
+34,organic,Orgánico,#4a3aa7,#9085e9,23.37939839,true
+35,organic,Orgánico,#4a3aa7,#9085e9,22.57237197,true
+0,influencer_code,Código influencer,#e87ba4,#d55181,100,false
+1,influencer_code,Código influencer,#e87ba4,#d55181,92.14437367,false
+2,influencer_code,Código influencer,#e87ba4,#d55181,80.62360802,false
+3,influencer_code,Código influencer,#e87ba4,#d55181,77.85714286,false
+4,influencer_code,Código influencer,#e87ba4,#d55181,75.18796992,false
+5,influencer_code,Código influencer,#e87ba4,#d55181,72.55936675,false
+6,influencer_code,Código influencer,#e87ba4,#d55181,71.03064067,false
+7,influencer_code,Código influencer,#e87ba4,#d55181,66.47058824,false
+8,influencer_code,Código influencer,#e87ba4,#d55181,64.64968153,false
+9,influencer_code,Código influencer,#e87ba4,#d55181,63.54166667,false
+10,influencer_code,Código influencer,#e87ba4,#d55181,60.98484848,false
+11,influencer_code,Código influencer,#e87ba4,#d55181,56.37860082,false
+12,influencer_code,Código influencer,#e87ba4,#d55181,52.46636771,false
+13,influencer_code,Código influencer,#e87ba4,#d55181,51.42857143,false
+14,influencer_code,Código influencer,#e87ba4,#d55181,47.91666667,false
+15,influencer_code,Código influencer,#e87ba4,#d55181,47.42857143,false
+16,influencer_code,Código influencer,#e87ba4,#d55181,46.06060606,false
+17,influencer_code,Código influencer,#e87ba4,#d55181,42.28187919,false
+18,influencer_code,Código influencer,#e87ba4,#d55181,38.0952381,false
+19,influencer_code,Código influencer,#e87ba4,#d55181,38.0952381,false
+20,influencer_code,Código influencer,#e87ba4,#d55181,34.09090909,false
+21,influencer_code,Código influencer,#e87ba4,#d55181,32.95454545,false
+22,influencer_code,Código influencer,#e87ba4,#d55181,32.95454545,false
+23,influencer_code,Código influencer,#e87ba4,#d55181,31.19970216,true
+24,influencer_code,Código influencer,#e87ba4,#d55181,29.538305,true
+25,influencer_code,Código influencer,#e87ba4,#d55181,27.96537793,true
+26,influencer_code,Código influencer,#e87ba4,#d55181,26.47620989,true
+27,influencer_code,Código influencer,#e87ba4,#d55181,25.06634067,true
+28,influencer_code,Código influencer,#e87ba4,#d55181,23.73154757,true
+29,influencer_code,Código influencer,#e87ba4,#d55181,22.46783276,true
+30,influencer_code,Código influencer,#e87ba4,#d55181,21.27141129,true
+31,influencer_code,Código influencer,#e87ba4,#d55181,20.13869976,true
+32,influencer_code,Código influencer,#e87ba4,#d55181,19.0663056,true
+33,influencer_code,Código influencer,#e87ba4,#d55181,18.05101687,true
+34,influencer_code,Código influencer,#e87ba4,#d55181,17.08979269,true
+35,influencer_code,Código influencer,#e87ba4,#d55181,16.1797541,true

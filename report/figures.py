@@ -68,10 +68,8 @@ def _endpoint_label(fig, x, y, text, color, mode, dy=0):
 def revenue_stack(ingresos, mode):
     """Part-to-whole en el tiempo: área apilada, cuatro series categóricas."""
     fig = _fig(mode, height=400)
-    order = ["suscripcion", "online", "tienda", "maquina"]
-    labels = {"suscripcion": "Suscripción", "online": "Tienda online",
-              "tienda": "Boutique", "maquina": "Máquinas"}
-    for slot, key in enumerate(order):
+    labels = T.REVENUE_CHANNEL_LABEL
+    for key, slot in T.REVENUE_CHANNEL_SLOT.items():
         rows = ingresos["series"][key]
         fig.add_trace(go.Scatter(
             x=_dates(rows), y=_vals(rows, "eur"), name=labels[key],
@@ -602,11 +600,9 @@ def cash_ratio(ingresos, mode):
 def channel_mix(ingresos, mode):
     """Part-to-whole en el tiempo, en porcentaje: el mix, no el nivel."""
     fig = _fig(mode, height=340)
-    order = ["suscripcion", "online", "tienda", "maquina"]
-    labels = {"suscripcion": "Suscripción", "online": "Tienda online",
-              "tienda": "Boutique", "maquina": "Máquinas"}
+    labels = T.REVENUE_CHANNEL_LABEL
     rows = ingresos["channel_mix"]["by_month_pct"]
-    for slot, key in enumerate(order):
+    for key, slot in T.REVENUE_CHANNEL_SLOT.items():
         fig.add_trace(go.Scatter(
             x=_dates(rows), y=[r[key] for r in rows], name=labels[key],
             mode="lines", stackgroup="uno", groupnorm="percent",

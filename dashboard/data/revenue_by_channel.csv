@@ -1,0 +1,145 @@
+month,channel,channel_label,color,color_dark,revenue_eur,share_pct,is_payment_gap_month
+2023-09-01,suscripcion,Suscripción,#2a78d6,#3987e5,351.32,3.239835629,false
+2023-09-01,online,Tienda online,#eb6834,#d95926,196.39,1.811087667,false
+2023-09-01,tienda,Boutique,#1baf7a,#199e70,4456.65,41.09875172,false
+2023-09-01,maquina,Máquinas,#eda100,#c98500,5839.4,53.85032498,false
+2023-10-01,suscripcion,Suscripción,#2a78d6,#3987e5,1717.1,10.67775878,false
+2023-10-01,online,Tienda online,#eb6834,#d95926,586.74,3.648633271,false
+2023-10-01,tienda,Boutique,#1baf7a,#199e70,5588.1,34.74951014,false
+2023-10-01,maquina,Máquinas,#eda100,#c98500,8189.15,50.92409781,false
+2023-11-01,suscripcion,Suscripción,#2a78d6,#3987e5,3018.11,16.85180832,false
+2023-11-01,online,Tienda online,#eb6834,#d95926,928.17,5.182495976,false
+2023-11-01,tienda,Boutique,#1baf7a,#199e70,7118.81,39.74832647,false
+2023-11-01,maquina,Máquinas,#eda100,#c98500,6844.62,38.21736924,false
+2023-12-01,suscripcion,Suscripción,#2a78d6,#3987e5,4473.32,21.04036281,false
+2023-12-01,online,Tienda online,#eb6834,#d95926,1102.89,5.18746831,false
+2023-12-01,tienda,Boutique,#1baf7a,#199e70,6975.77,32.81069355,false
+2023-12-01,maquina,Máquinas,#eda100,#c98500,8708.68,40.96147533,false
+2024-01-01,suscripcion,Suscripción,#2a78d6,#3987e5,6361.33,22.36048533,false
+2024-01-01,online,Tienda online,#eb6834,#d95926,3194.76,11.2297875,false
+2024-01-01,tienda,Boutique,#1baf7a,#199e70,8763.1,30.80286182,false
+2024-01-01,maquina,Máquinas,#eda100,#c98500,10129.79,35.60686534,false
+2024-02-01,suscripcion,Suscripción,#2a78d6,#3987e5,7808.1,26.3279371,false
+2024-02-01,online,Tienda online,#eb6834,#d95926,2049.25,6.90981482,false
+2024-02-01,tienda,Boutique,#1baf7a,#199e70,8901.05,30.01322787,false
+2024-02-01,maquina,Máquinas,#eda100,#c98500,10898.69,36.74902022,false
+2024-03-01,suscripcion,Suscripción,#2a78d6,#3987e5,11780.45,30.41988424,false
+2024-03-01,online,Tienda online,#eb6834,#d95926,4467.26,11.53551283,false
+2024-03-01,tienda,Boutique,#1baf7a,#199e70,9284.3,23.97423963,false
+2024-03-01,maquina,Máquinas,#eda100,#c98500,13194.14,34.07036331,false
+2024-04-01,suscripcion,Suscripción,#2a78d6,#3987e5,13971.69,33.47639948,false
+2024-04-01,online,Tienda online,#eb6834,#d95926,4448.55,10.65879911,false
+2024-04-01,tienda,Boutique,#1baf7a,#199e70,10721.13,25.68800415,false
+2024-04-01,maquina,Máquinas,#eda100,#c98500,12594.57,30.17679726,false
+2024-05-01,suscripcion,Suscripción,#2a78d6,#3987e5,15832.82,34.41348821,false
+2024-05-01,online,Tienda online,#eb6834,#d95926,6013.07,13.06973196,false
+2024-05-01,tienda,Boutique,#1baf7a,#199e70,11757.99,25.55662543,false
+2024-05-01,maquina,Máquinas,#eda100,#c98500,12403.72,26.96015441,false
+2024-06-01,suscripcion,Suscripción,#2a78d6,#3987e5,17271.44,40.03372102,false
+2024-06-01,online,Tienda online,#eb6834,#d95926,7183.31,16.65029833,false
+2024-06-01,tienda,Boutique,#1baf7a,#199e70,8373.17,19.40829206,false
+2024-06-01,maquina,Máquinas,#eda100,#c98500,10314.31,23.90768859,false
+2024-07-01,suscripcion,Suscripción,#2a78d6,#3987e5,19242.73,40.84757736,false
+2024-07-01,online,Tienda online,#eb6834,#d95926,5028.61,10.67450076,false
+2024-07-01,tienda,Boutique,#1baf7a,#199e70,8760.34,18.59604463,false
+2024-07-01,maquina,Máquinas,#eda100,#c98500,14076.94,29.88187724,false
+2024-08-01,suscripcion,Suscripción,#2a78d6,#3987e5,17243.33,42.7699081,false
+2024-08-01,online,Tienda online,#eb6834,#d95926,4799.2,11.90381109,false
+2024-08-01,tienda,Boutique,#1baf7a,#199e70,8538.13,21.17775601,false
+2024-08-01,maquina,Máquinas,#eda100,#c98500,9735.84,24.1485248,false
+2024-09-01,suscripcion,Suscripción,#2a78d6,#3987e5,19401.38,30.61920249,false
+2024-09-01,online,Tienda online,#eb6834,#d95926,10717.57,16.91443836,false
+2024-09-01,tienda,Boutique,#1baf7a,#199e70,16701.69,26.35855945,false
+2024-09-01,maquina,Máquinas,#eda100,#c98500,16542.8,26.1077997,false
+2024-10-01,suscripcion,Suscripción,#2a78d6,#3987e5,21873.72,27.75870405,false
+2024-10-01,online,Tienda online,#eb6834,#d95926,15334.22,19.45979353,false
+2024-10-01,tienda,Boutique,#1baf7a,#199e70,19000.34,24.1122596,false
+2024-10-01,maquina,Máquinas,#eda100,#c98500,22591.22,28.66924283,false
+2024-11-01,suscripcion,Suscripción,#2a78d6,#3987e5,24948.98,32.50808501,false
+2024-11-01,online,Tienda online,#eb6834,#d95926,16550.75,21.56533806,false
+2024-11-01,tienda,Boutique,#1baf7a,#199e70,18376.86,23.94472748,false
+2024-11-01,maquina,Máquinas,#eda100,#c98500,16870.41,21.98184945,false
+2024-12-01,suscripcion,Suscripción,#2a78d6,#3987e5,28441.13,30.58083428,false
+2024-12-01,online,Tienda online,#eb6834,#d95926,21131.16,22.72091517,false
+2024-12-01,tienda,Boutique,#1baf7a,#199e70,21767.98,23.40564489,false
+2024-12-01,maquina,Máquinas,#eda100,#c98500,21662.85,23.29260567,false
+2025-01-01,suscripcion,Suscripción,#2a78d6,#3987e5,30581.43,33.90928371,false
+2025-01-01,online,Tienda online,#eb6834,#d95926,20513.71,22.74600018,false
+2025-01-01,tienda,Boutique,#1baf7a,#199e70,21772.73,24.14202602,false
+2025-01-01,maquina,Máquinas,#eda100,#c98500,17318.14,19.20269008,false
+2025-02-01,suscripcion,Suscripción,#2a78d6,#3987e5,31803.88,33.38958126,false
+2025-02-01,online,Tienda online,#eb6834,#d95926,20920.71,21.96379016,false
+2025-02-01,tienda,Boutique,#1baf7a,#199e70,21237.48,22.29635391,false
+2025-02-01,maquina,Máquinas,#eda100,#c98500,21288.84,22.35027466,false
+2025-03-01,suscripcion,Suscripción,#2a78d6,#3987e5,33736.48,34.97657445,true
+2025-03-01,online,Tienda online,#eb6834,#d95926,22517.61,23.34531826,true
+2025-03-01,tienda,Boutique,#1baf7a,#199e70,20069.67,20.80739623,true
+2025-03-01,maquina,Máquinas,#eda100,#c98500,20130.74,20.87071106,true
+2025-04-01,suscripcion,Suscripción,#2a78d6,#3987e5,38468.49,34.9405116,false
+2025-04-01,online,Tienda online,#eb6834,#d95926,25253.69,22.93765231,false
+2025-04-01,tienda,Boutique,#1baf7a,#199e70,21357.64,19.39891241,false
+2025-04-01,maquina,Máquinas,#eda100,#c98500,25017.28,22.72292367,false
+2025-05-01,suscripcion,Suscripción,#2a78d6,#3987e5,44261.91,36.73233277,false
+2025-05-01,online,Tienda online,#eb6834,#d95926,27620.76,22.92207787,false
+2025-05-01,tienda,Boutique,#1baf7a,#199e70,23382.62,19.40490546,false
+2025-05-01,maquina,Máquinas,#eda100,#c98500,25233.21,20.94068391,false
+2025-06-01,suscripcion,Suscripción,#2a78d6,#3987e5,46758.24,41.17435875,false
+2025-06-01,online,Tienda online,#eb6834,#d95926,24037.09,21.16657443,false
+2025-06-01,tienda,Boutique,#1baf7a,#199e70,17822.62,15.69423806,false
+2025-06-01,maquina,Máquinas,#eda100,#c98500,24943.6,21.96482876,false
+2025-07-01,suscripcion,Suscripción,#2a78d6,#3987e5,46834.69,44.74083246,false
+2025-07-01,online,Tienda online,#eb6834,#d95926,18669.28,17.8346249,false
+2025-07-01,tienda,Boutique,#1baf7a,#199e70,17059.25,16.29657517,false
+2025-07-01,maquina,Máquinas,#eda100,#c98500,22116.75,21.12796746,false
+2025-08-01,suscripcion,Suscripción,#2a78d6,#3987e5,44918.53,42.50263356,false
+2025-08-01,online,Tienda online,#eb6834,#d95926,20456.81,19.35656174,false
+2025-08-01,tienda,Boutique,#1baf7a,#199e70,16655.94,15.76011758,false
+2025-08-01,maquina,Máquinas,#eda100,#c98500,23652.83,22.38068713,false
+2025-09-01,suscripcion,Suscripción,#2a78d6,#3987e5,41784.57,28.86215092,false
+2025-09-01,online,Tienda online,#eb6834,#d95926,39761.55,27.46477604,false
+2025-09-01,tienda,Boutique,#1baf7a,#199e70,29068.93,20.07898716,false
+2025-09-01,maquina,Máquinas,#eda100,#c98500,34157.84,23.59408588,false
+2025-10-01,suscripcion,Suscripción,#2a78d6,#3987e5,50887.81,27.79396234,false
+2025-10-01,online,Tienda online,#eb6834,#d95926,52236.54,28.53061323,false
+2025-10-01,tienda,Boutique,#1baf7a,#199e70,39487.84,21.56751367,false
+2025-10-01,maquina,Máquinas,#eda100,#c98500,40477.25,22.10791076,false
+2025-11-01,suscripcion,Suscripción,#2a78d6,#3987e5,51842.37,26.8178131,false
+2025-11-01,online,Tienda online,#eb6834,#d95926,59009.08,30.52511833,false
+2025-11-01,tienda,Boutique,#1baf7a,#199e70,42260.63,21.86122427,false
+2025-11-01,maquina,Máquinas,#eda100,#c98500,40201.11,20.7958443,false
+2025-12-01,suscripcion,Suscripción,#2a78d6,#3987e5,59393.46,28.93105939,false
+2025-12-01,online,Tienda online,#eb6834,#d95926,61541.85,29.97755842,false
+2025-12-01,tienda,Boutique,#1baf7a,#199e70,42036.03,20.47610764,false
+2025-12-01,maquina,Máquinas,#eda100,#c98500,42321.73,20.61527454,false
+2026-01-01,suscripcion,Suscripción,#2a78d6,#3987e5,61250.15,30.04058289,false
+2026-01-01,online,Tienda online,#eb6834,#d95926,64650.79,31.70845158,false
+2026-01-01,tienda,Boutique,#1baf7a,#199e70,39407.38,19.327637,false
+2026-01-01,maquina,Máquinas,#eda100,#c98500,38583.03,18.92332853,false
+2026-02-01,suscripcion,Suscripción,#2a78d6,#3987e5,60951.65,33.02765562,false
+2026-02-01,online,Tienda online,#eb6834,#d95926,56388.61,30.55509723,false
+2026-02-01,tienda,Boutique,#1baf7a,#199e70,35722.97,19.35707976,false
+2026-02-01,maquina,Máquinas,#eda100,#c98500,31484.08,17.06016739,false
+2026-03-01,suscripcion,Suscripción,#2a78d6,#3987e5,75576.77,35.00301646,false
+2026-03-01,online,Tienda online,#eb6834,#d95926,67488.2,31.25683429,false
+2026-03-01,tienda,Boutique,#1baf7a,#199e70,38960.03,18.04414996,false
+2026-03-01,maquina,Máquinas,#eda100,#c98500,33890.02,15.69599929,false
+2026-04-01,suscripcion,Suscripción,#2a78d6,#3987e5,72319.19,33.84600084,false
+2026-04-01,online,Tienda online,#eb6834,#d95926,63331.75,29.63980188,false
+2026-04-01,tienda,Boutique,#1baf7a,#199e70,38352.5,17.94929876,false
+2026-04-01,maquina,Máquinas,#eda100,#c98500,39667.86,18.56489851,false
+2026-05-01,suscripcion,Suscripción,#2a78d6,#3987e5,79171.74,34.51695806,false
+2026-05-01,online,Tienda online,#eb6834,#d95926,65725.01,28.65450998,false
+2026-05-01,tienda,Boutique,#1baf7a,#199e70,39789.86,17.34741372,false
+2026-05-01,maquina,Máquinas,#eda100,#c98500,44683.95,19.48111824,false
+2026-06-01,suscripcion,Suscripción,#2a78d6,#3987e5,77426.54,35.91122319,false
+2026-06-01,online,Tienda online,#eb6834,#d95926,63314.09,29.36572417,false
+2026-06-01,tienda,Boutique,#1baf7a,#199e70,33435.93,15.50792719,false
+2026-06-01,maquina,Máquinas,#eda100,#c98500,41428.85,19.21512545,false
+2026-07-01,suscripcion,Suscripción,#2a78d6,#3987e5,77478.07,39.33183857,false
+2026-07-01,online,Tienda online,#eb6834,#d95926,52771.46,26.78949728,false
+2026-07-01,tienda,Boutique,#1baf7a,#199e70,29339.35,14.89415751,false
+2026-07-01,maquina,Máquinas,#eda100,#c98500,37396.75,18.98450664,false
+2026-08-01,suscripcion,Suscripción,#2a78d6,#3987e5,69273.8,36.12333552,false
+2026-08-01,online,Tienda online,#eb6834,#d95926,54507.24,28.42320356,false
+2026-08-01,tienda,Boutique,#1baf7a,#199e70,31721.33,16.54132221,false
+2026-08-01,maquina,Máquinas,#eda100,#c98500,36267.85,18.9121387,false

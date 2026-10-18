@@ -1,0 +1,33 @@
+scenario_group,scenario_id,scenario_label,channel,channel_label,color,color_dark,ratio,rank,margin_pct,is_reference
+method,loaded_projected,Cargado × proyectado,paid_social,Paid social,#2a78d6,#3987e5,37.33381326,1,,true
+method,attributed_projected,Reparto × proyectado,paid_social,Paid social,#2a78d6,#3987e5,53.90837605,1,,false
+method,loaded_observed_mature,Cargado × obs. maduras,paid_social,Paid social,#2a78d6,#3987e5,38.1470848,2,,false
+method,attributed_observed_mature,Reparto × obs. maduras,paid_social,Paid social,#2a78d6,#3987e5,55.0827042,2,,false
+method,loaded_projected,Cargado × proyectado,podcast_ads,Podcast,#eda100,#c98500,33.65187781,2,,true
+method,attributed_projected,Reparto × proyectado,podcast_ads,Podcast,#eda100,#c98500,44.30301977,2,,false
+method,loaded_observed_mature,Cargado × obs. maduras,podcast_ads,Podcast,#eda100,#c98500,42.37409923,1,,false
+method,attributed_observed_mature,Reparto × obs. maduras,podcast_ads,Podcast,#eda100,#c98500,55.78590789,1,,false
+method,loaded_projected,Cargado × proyectado,influencer_code,Código influencer,#e87ba4,#d55181,21.54803351,3,,true
+method,attributed_projected,Reparto × proyectado,influencer_code,Código influencer,#e87ba4,#d55181,27.30569057,3,,false
+method,loaded_observed_mature,Cargado × obs. maduras,influencer_code,Código influencer,#e87ba4,#d55181,28.07801834,3,,false
+method,attributed_observed_mature,Reparto × obs. maduras,influencer_code,Código influencer,#e87ba4,#d55181,35.58049417,3,,false
+method,loaded_projected,Cargado × proyectado,referral,Referido,#008300,#008300,11.83115849,4,,true
+method,attributed_projected,Reparto × proyectado,referral,Referido,#008300,#008300,15.28246094,4,,false
+method,loaded_observed_mature,Cargado × obs. maduras,referral,Referido,#008300,#008300,13.61137557,4,,false
+method,attributed_observed_mature,Reparto × obs. maduras,referral,Referido,#008300,#008300,17.58199044,4,,false
+margin,margin_10,Margen del 10%,paid_social,Paid social,#2a78d6,#3987e5,3.733381326,,10,false
+margin,margin_10,Margen del 10%,podcast_ads,Podcast,#eda100,#c98500,3.365187781,,10,false
+margin,margin_10,Margen del 10%,influencer_code,Código influencer,#e87ba4,#d55181,2.154803351,,10,false
+margin,margin_10,Margen del 10%,referral,Referido,#008300,#008300,1.183115849,,10,false
+margin,margin_30,Margen del 30%,paid_social,Paid social,#2a78d6,#3987e5,11.20014398,,30,false
+margin,margin_30,Margen del 30%,podcast_ads,Podcast,#eda100,#c98500,10.09556334,,30,false
+margin,margin_30,Margen del 30%,influencer_code,Código influencer,#e87ba4,#d55181,6.464410053,,30,false
+margin,margin_30,Margen del 30%,referral,Referido,#008300,#008300,3.549347548,,30,false
+margin,margin_50,Margen del 50%,paid_social,Paid social,#2a78d6,#3987e5,18.66690663,,50,false
+margin,margin_50,Margen del 50%,podcast_ads,Podcast,#eda100,#c98500,16.82593891,,50,false
+margin,margin_50,Margen del 50%,influencer_code,Código influencer,#e87ba4,#d55181,10.77401676,,50,false
+margin,margin_50,Margen del 50%,referral,Referido,#008300,#008300,5.915579247,,50,false
+margin,margin_70,Margen del 70%,paid_social,Paid social,#2a78d6,#3987e5,26.13366928,,70,false
+margin,margin_70,Margen del 70%,podcast_ads,Podcast,#eda100,#c98500,23.55631447,,70,false
+margin,margin_70,Margen del 70%,influencer_code,Código influencer,#e87ba4,#d55181,15.08362346,,70,false
+margin,margin_70,Margen del 70%,referral,Referido,#008300,#008300,8.281810945,,70,false

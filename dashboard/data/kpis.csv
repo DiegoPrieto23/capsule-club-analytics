@@ -1,0 +1,36 @@
+page,page_title,is_cover,is_hero,position,kpi_id,label,value,unit,value_display,period_start,period_end,period_label,note
+index,Resumen ejecutivo,true,true,1,revenue_total,"Ingreso acumulado del histórico, en cuatro canales",3907789.43,eur,3 907 789 €,2023-09-01,2026-08-01,Sep 2023 – Ago 2026,Sep 2023 – Ago 2026
+index,Resumen ejecutivo,true,false,2,active_subscribers,Suscriptores activos,2412,count,2 412,2026-08-01,2026-08-01,Ago 2026,"netos de pausas, último mes"
+index,Resumen ejecutivo,true,false,3,subscribers_yoy,Crecimiento interanual,57.956778,pct,58%,2026-08-01,2026-08-01,Ago 2026,suscriptores activos frente al mismo mes del año anterior
+index,Resumen ejecutivo,true,false,4,cac_loaded,CAC cargado,14.53420166,eur,"14,53 €",2023-09-01,2026-05-01,Sep 2023 – May 2026,incluye el gasto que no se puede asignar
+index,Resumen ejecutivo,true,false,5,ltv_projected,LTV por suscriptor,477.3790411,eur,477 €,2023-09-01,2026-08-01,Sep 2023 – Ago 2026,proyectado a 36 meses
+index,Resumen ejecutivo,true,false,6,payback_slowest,Payback,1.636896868,months,"1,6 meses",2023-09-01,2026-05-01,Sep 2023 – May 2026,el canal más lento; el objetivo habitual son 12
+index,Resumen ejecutivo,true,false,7,recoverable_value_year,Valor recuperable,60719.27632,eur,60 719 €,2023-09-01,2026-08-01,Sep 2023 – Ago 2026,"al año, sólo con los dos primeros puntos del plan"
+suscriptores,Suscriptores activos,false,true,1,active_subscribers,Suscriptores activos netos de pausas en Ago 2026,2412,count,2 412,2026-08-01,2026-08-01,Ago 2026,un 58% más que un año antes
+suscriptores,Suscriptores activos,false,false,2,subscribers_yoy,Crecimiento interanual,57.956778,pct,58%,2026-08-01,2026-08-01,Ago 2026,frente al mismo mes del año anterior
+suscriptores,Suscriptores activos,false,false,3,signups_12m,Altas en 12 meses,2429,count,2 429,2025-09-01,2026-08-01,Sep 2025 – Ago 2026,suscripciones nuevas del último año
+suscriptores,Suscriptores activos,false,false,4,paused_august_pct,Pausa en agosto,13.45544206,pct,"13,5%",2023-09-01,2026-08-01,Sep 2023 – Ago 2026,"de la base, media de los tres agostos; vuelve en otoño"
+suscriptores,Suscriptores activos,false,false,5,involuntary_churn,Bajas por fallo de cobro,274,count,274,2023-09-01,2026-08-01,Sep 2023 – Ago 2026,en tres años; no las decidió el cliente
+ingresos,Ingresos totales,false,true,1,revenue_12m,"Ingreso de los últimos doce meses, en cuatro canales",2378225.39,eur,2 378 225 €,2025-09-01,2026-08-01,Sep 2025 – Ago 2026,un 107% más que los doce meses anteriores
+ingresos,Ingresos totales,false,false,2,revenue_total,Ingreso acumulado,3907789.43,eur,3 907 789 €,2023-09-01,2026-08-01,Sep 2023 – Ago 2026,"tres años, cuatro canales"
+ingresos,Ingresos totales,false,false,3,revenue_last_month,Último mes,191770.22,eur,191 770 €,2026-08-01,2026-08-01,Ago 2026,Ago 2026
+ingresos,Ingresos totales,false,false,4,revenue_yoy,Crecimiento interanual,107.103731,pct,107%,2025-09-01,2026-08-01,Sep 2025 – Ago 2026,últimos doce meses frente a los doce anteriores
+ingresos,Ingresos totales,false,false,5,payment_gap_cash_drop,Hueco de cobro,19.74382537,pct,Mar 2025,2025-03-01,2025-03-01,Mar 2025,"la caja cae un 19,7% sin que baje el MRR"
+capsulas,Demanda por sabor de cápsula,false,true,1,capsule_units_12m,"Cápsulas vendidas en los últimos doce meses, club y tienda",231878.7853,units,231 879,2025-09-01,2026-08-01,Sep 2025 – Ago 2026,un 117% más que los doce meses anteriores
+capsulas,Demanda por sabor de cápsula,false,false,2,capsule_units_total,Unidades del histórico,369043.5402,units,369 044,2023-09-01,2026-08-01,Sep 2023 – Ago 2026,"club + tienda, doce sabores"
+capsulas,Demanda por sabor de cápsula,false,false,3,stockouts_detected,Roturas detectadas,6,count,6,2023-09-01,2026-08-01,Sep 2023 – Ago 2026,"de 44 candidatas, sin falsos positivos"
+capsulas,Demanda por sabor de cápsula,false,false,4,stockout_lost_sales,Venta perdida,17118.65723,eur,17 119 €,2023-09-01,2026-08-01,Sep 2023 – Ago 2026,demanda real que no se pudo servir
+capsulas,Demanda por sabor de cápsula,false,false,5,seasonal_flavours_share,Peso de la temporada,9.036556893,pct,"9,0%",2023-09-01,2026-08-01,Sep 2023 – Ago 2026,"del volumen, en los dos sabores de temporada"
+cohortes,Cohortes y RFM,false,false,1,subscriptions_analysed,Suscripciones analizadas,5110,count,5 110,2023-09-01,2026-08-01,Sep 2023 – Ago 2026,"55,9% siguen activas"
+cohortes,Cohortes y RFM,false,false,2,retention_12m,Siguen al año,59.4047619,pct,"59,4%",2023-09-01,2026-08-01,Sep 2023 – Ago 2026,sin contar regaladas
+cohortes,Cohortes y RFM,false,false,3,discount_ltv_cost,Coste del descuento,128,eur,128 €,2023-09-01,2026-08-01,Sep 2023 – Ago 2026,de valor por alta que lo lleva
+cohortes,Cohortes y RFM,false,false,4,at_risk_customers,Clientes en riesgo,960,count,960,2026-08-01,2026-08-01,Ago 2026,"17,4% del ingreso de tienda, 193 días sin comprar"
+atribucion,Atribución de marketing,false,false,1,touchpoints_total,Contactos de marketing,46541,count,46 541,2023-09-01,2026-08-01,Sep 2023 – Ago 2026,en el histórico completo
+atribucion,Atribución de marketing,false,false,2,orphan_touchpoints_pct,Sin cliente asociado,39.35777877,pct,"39,4%",2023-09-01,2026-05-01,Sep 2023 – May 2026,se llevan 15 852 € de gasto
+atribucion,Atribución de marketing,false,false,3,signups_without_touchpoint_pct,Altas sin rastro,6.242982259,pct,"6,2%",2023-09-01,2026-05-01,Sep 2023 – May 2026,aparecen sin ningún contacto previo
+atribucion,Atribución de marketing,false,false,4,cac_understatement_pct,CAC infravalorado,24.16906461,pct,24%,2023-09-01,2026-05-01,Sep 2023 – May 2026,"11,71 € frente a 14,53 € reales"
+cac-ltv,Lo que cuesta un cliente contra lo que vale,false,true,1,payback_slowest,Tarda el canal más lento en devolver lo que costó captar un cliente,1.636896868,months,"1,6 meses",2023-09-01,2026-05-01,Sep 2023 – May 2026,el objetivo habitual en suscripción son 12 meses
+cac-ltv,Lo que cuesta un cliente contra lo que vale,false,false,2,cac_loaded,Coste por cliente,14.53420166,eur,"14,53 €",2023-09-01,2026-05-01,Sep 2023 – May 2026,todo el gasto entre todas las altas
+cac-ltv,Lo que cuesta un cliente contra lo que vale,false,false,3,ltv_projected,Valor por cliente,477.3790411,eur,477 €,2023-09-01,2026-08-01,Sep 2023 – Ago 2026,proyectado a 36 meses
+cac-ltv,Lo que cuesta un cliente contra lo que vale,false,false,4,marketing_intensity_pct,Peso del marketing,1.810914865,pct,"1,81%",2023-09-01,2026-08-01,Sep 2023 – Ago 2026,del ingreso; lo normal es un 10-30%
+cac-ltv,Lo que cuesta un cliente contra lo que vale,false,false,5,cac_loaded_max,Canal más caro,40.57444922,eur,"40,57 €",2023-09-01,2026-05-01,Sep 2023 – May 2026,"Referido, casi el triple que la media"
