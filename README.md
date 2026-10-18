@@ -377,16 +377,46 @@ Hay dos caminos, y los dos producen lo mismo.
 #### Con Airflow
 
 Necesita [Docker Desktop](https://www.docker.com/products/docker-desktop/) y
-[Astro CLI](https://www.astronomer.io/docs/astro/cli/install-cli).
+[Astro CLI](https://www.astronomer.io/docs/astro/cli/install-cli). Los comandos
+se ejecutan desde la raíz del repositorio.
 
-```bash
-astro dev start
-```
+1. **Levantar Airflow.** Con Docker Desktop abierto:
 
-La primera vez construye la imagen. Después, en la interfaz de Airflow
-(<http://localhost:8080>), lanzar el DAG `capsule_club_pipeline`: genera el
-dataset, construye las tablas, ejecuta los seis cuadernos, reconstruye el
-informe y exporta los CSV.
+   ```bash
+   astro dev start
+   ```
+
+   La primera vez construye la imagen y tarda unos minutos; después arranca en
+   segundos. Termina mostrando la dirección de la interfaz.
+
+2. **Abrir la interfaz** en <http://localhost:8080>. En local no pide usuario.
+
+3. **Ver el DAG.** En **Dags** → `capsule_club_pipeline`. El interruptor tiene
+   que estar activado: un DAG en pausa deja las ejecuciones en cola. La pestaña
+   **Graph** dibuja el pipeline, con los grupos `dbt` y `analysis`
+   desplegables; **Grid** muestra cada ejecución tarea a tarea.
+
+4. **Lanzarlo** con el botón **Trigger**, o desde la terminal:
+
+   ```bash
+   astro dev run dags trigger capsule_club_pipeline
+   ```
+
+   Genera el dataset, construye las tablas, ejecuta los seis cuadernos,
+   reconstruye el informe y exporta los CSV. Tarda unos dos minutos y termina
+   con las 61 tareas en verde. El log de cada tarea se abre desde **Grid**; el
+   de `dbt.dbt_producer_watcher` lleva el `dbt build` completo, que acaba en
+   `PASS=245`.
+
+5. **Ver el informe** en `report/dist/index.html`, con doble clic. La fecha
+   "Generado el …" de la cabecera es la de la ejecución.
+
+6. **Apagarlo** con `astro dev stop`, que para los contenedores sin borrar
+   nada. Si algo falla al arrancar, `astro dev logs` muestra los logs.
+
+Antes de lanzar el DAG hay que cerrar cualquier cuaderno o sesión de Python que
+tenga abierto `data/warehouse.duckdb` desde fuera del contenedor: el bloqueo de
+escritura de DuckDB es el mismo.
 
 Lo que escribe el DAG llega al repositorio por volúmenes de Docker: `data/`,
 `analysis/outputs/`, `report/dist/` y `dashboard/data/`. Cada cuaderno ejecutado
@@ -394,10 +424,6 @@ se guarda junto al log de su tarea; los de `analysis/` no se tocan. El resto del
 código va dentro de la imagen, así que un cambio en los cuadernos, el generador,
 el informe o `dbt_project/` exige `astro dev restart`; sólo `dags/` se recarga
 en caliente.
-
-Antes de lanzarlo hay que cerrar cualquier cuaderno o sesión de Python que tenga
-abierto `data/warehouse.duckdb` desde fuera del contenedor: el bloqueo de
-escritura de DuckDB es el mismo.
 
 #### Sin Airflow
 
