@@ -408,7 +408,7 @@ Necesita Python 3.13. Los comandos son de Windows; en Linux o macOS, cambiar
 python -m venv venv
 venv\Scripts\pip install -r requirements.txt
 
-# 1. Generar el dataset (~2 min)
+# 1. Generar el dataset (~15 s)
 venv\Scripts\python data_generation\generate_synthetic_data.py
 
 # 2. Construir las tablas y pasar las comprobaciones

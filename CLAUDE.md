@@ -116,10 +116,13 @@ apilaba sobre el último día del histórico los eventos programados para despu�
 obsoleto; dbt pasa 220/220 tests y el notebook 01 está reejecutado sobre los
 datos nuevos.
 
-Ejecutados los prompts 1 a 11 de `PROMPTS.md`, más una ronda de saneamiento de
-deuda técnica: entorno, generador de datos sintéticos, pipeline dbt (25 modelos
-y 220 tests: `dbt build` deja 245/245 nodos en verde), las seis páginas de
-análisis y el informe HTML. El siguiente es el prompt 12, la revisión final.
+Ejecutadas las dos fases de `PROMPTS.md`. La fase 1 (prompts 1 a 12, más una
+ronda de saneamiento de deuda técnica): entorno, generador de datos sintéticos,
+pipeline dbt (25 modelos y 220 tests: `dbt build` deja 245/245 nodos en verde),
+las seis páginas de análisis y el informe HTML. La fase 2 (prompts 13 a 18):
+Airflow + Cosmos, exportación para el dashboard y README; lo que conviene saber
+está en "De la fase 2" más abajo. Queda pendiente montar el dashboard en
+claude.ai y añadir su enlace al README, que hará Diego.
 
 El informe se genera con `python report/build_report.py` y sale en
 `report/dist/` (7 páginas, 24 gráficos, 23 recomendaciones, 1,0 MB de HTML más
@@ -322,6 +325,52 @@ Dos cosas que conviene saber antes de tocar nada:
 - Los notebooks consumen **marts**, no tablas `raw_*` ni modelos intermedios.
   `dbt_project/README.md` recoge las decisiones que hay que conocer antes de
   usarlos (tres definiciones de activo, tres medidas de ingreso, clientes nulos).
+
+### De la fase 2 (Airflow + Cosmos)
+
+El DAG `capsule_club_pipeline` (`dags/capsule_club_pipeline.py`) tiene 61 tareas:
+`generate_data`, el grupo `dbt` (productor, puerta y un `.run` y un `.test` por
+cada uno de los 25 modelos, agrupados por capa), el grupo `analysis` (seis
+notebooks con papermill), `build_report` y `export_dashboard_data`. El
+docstring del DAG explica cada decisión; lo esencial:
+
+- **Cosmos en `ExecutionMode.WATCHER`, no `LOCAL` con pool de un hueco.** DuckDB
+  admite un único escritor y el modo por defecto (un `dbt run` por modelo)
+  falla con "Could not set lock on file". El watcher lanza un único `dbt build`
+  con los 4 threads de `profiles.yml` y el resto de tareas lo observan por XCom:
+  un escritor por construcción y el mismo comando que en local. El pool de un
+  hueco también evitaba el bloqueo, pero serializaba 25 procesos dbt.
+- **`TestBehavior.AFTER_EACH`**: los 220 tests corren dentro del mismo `dbt build`
+  y cada modelo tiene su `.test`. Si el build falla, `dbt_producer_watcher_done`
+  queda en `upstream_failed` y los notebooks no arrancan. Sin reintentos en dbt:
+  un sensor reintentado lanza su propio `dbt run` y competiría por el bloqueo.
+- **`LoadMode.DBT_MANIFEST`**: el manifest lo genera `dbt parse` al construir la
+  imagen, así que parsear el DAG es leer un JSON (0,03 s frente a ~12 s de un
+  `dbt ls`). Cualquier cambio en `dbt_project/` exige `astro dev restart`.
+- **Volúmenes**: `docker-compose.override.yml` monta `data/` (entero, no el
+  `.duckdb` suelto: DuckDB crea su `.wal` al lado y el generador borra y rehace
+  el fichero), `analysis/outputs/`, `report/dist/` y `dashboard/data/` en los
+  cuatro servicios de Airflow, y define `CAPSULE_DUCKDB_PATH`. Los venvs viven en
+  `/opt/venvs` para que ningún volumen los tape.
+- **Pool `analysis_notebooks` de 3 huecos** (`airflow_settings.yaml`): con cinco
+  notebooks a la vez DuckDB se quedó sin memoria en la VM de Docker Desktop.
+- **Tiempos** (ejecución desde cero del 2026-10-18, sin `warehouse.duckdb` ni
+  JSON): 107 s el DAG entero. `generate_data` 14 s; grupo dbt 31 s, de los que
+  el `dbt build` son 11 s; grupo `analysis` 57 s, con el 03 como camino crítico
+  (50 s); `build_report` 1,3 s y `export_dashboard_data` 0,6 s. En local, sin
+  Airflow: generador 15 s y `dbt build` 27 s de reloj (16 s según dbt).
+- **Reproducibilidad entre sistemas**: el DAG en Linux y los comandos en Windows
+  producen ficheros idénticos en contenido (`git diff` vacío en `report/dist/`,
+  `dashboard/data/` y el manifiesto). Lo único que cambia es CRLF frente a LF,
+  y `.gitattributes` lo normaliza; un `git status` con esos ficheros en `M`
+  tras ejecutar en Windows no es un cambio real.
+- **Dependencias**: `requirements/` está partido por entorno y
+  `requirements/constraints.txt` (freeze del venv local) fija las versiones de
+  la imagen. Al quitar la previsión se fueron prophet, lightgbm y scikit-learn
+  (y `libgomp1` de `packages.txt`); papermill no estaba en el venv local y
+  ahora sí, fijado.
+- En Git Bash, `astro` no está en el PATH: el ejecutable está en
+  `%LOCALAPPDATA%\Microsoft\WinGet\Packages\Astronomer.Astro_Microsoft.Winget.Source_8wekyb3d8bbwe\astro.exe`.
 
 ## Cómo trabajar en este repo
 
