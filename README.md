@@ -10,10 +10,10 @@
 
 Proyecto de analítica de extremo a extremo sobre un negocio simulado de café en
 cápsulas. Cubre el recorrido completo: generación del dataset, modelado en dbt
-sobre DuckDB, seis análisis en Python y un informe HTML interactivo de siete
-páginas como entregable.
+sobre DuckDB, seis análisis en Python, un informe HTML interactivo de siete
+páginas como entregable y un DAG de Airflow que encadena todo lo anterior.
 
-**Qué hace, en cuatro piezas:**
+**Qué hace, en cinco piezas:**
 
 1. **Genera** un negocio sintético de tres años y 280.841 filas en doce tablas
    —club de suscripción, tienda online, boutiques y venta de máquinas— con
@@ -23,20 +23,22 @@ páginas como entregable.
 2. **Modela** ese dato en bruto hasta siete tablas analíticas, pasando por una
    capa de limpieza y otra de lógica de negocio, con 220 comprobaciones
    automáticas que se ejecutan en cada build.
-3. **Analiza** sobre esas tablas cuatro técnicas que se encadenan —series
-   temporales, forecasting validado contra el pasado, cohortes y RFM, y
-   atribución de marketing multimodelo— hasta el cruce que las cierra: CAC por
-   canal contra el LTV que ese canal acaba dejando.
+3. **Analiza** sobre esas tablas tres técnicas que se encadenan —series
+   temporales, cohortes y RFM, y atribución de marketing multimodelo— hasta el
+   cruce que las cierra: CAC por canal contra el LTV que ese canal acaba
+   dejando.
 4. **Publica** un informe HTML estático de siete páginas: gráficos Plotly con su
-   tabla de datos debajo, modo claro y oscuro, y 25 recomendaciones, cada una
+   tabla de datos debajo, modo claro y oscuro, y 23 recomendaciones, cada una
    con la cifra que la sostiene.
+5. **Orquesta** los cuatro pasos anteriores en un único DAG de Airflow 3, con
+   dbt dentro gracias a Cosmos: una tarea por modelo y por sus tests.
 
 La pregunta que hilan los siete capítulos es una: **qué canal de captación
 conviene** cuando se mide por lo que el cliente acaba dejando y no por lo que
 cuesta traerlo. La respuesta cambia el orden del ranking.
 
-**Stack:** Python 3.13 · DuckDB · dbt · pandas · statsmodels · Plotly.
-Todo se ejecuta en local, sin servicios de pago.
+**Stack:** Python 3.13 · DuckDB · dbt · Airflow 3 + Cosmos (Astro CLI) ·
+pandas · statsmodels · Plotly. Todo se ejecuta en local, sin servicios de pago.
 
 ## El negocio simulado
 
@@ -44,40 +46,19 @@ Capsule Club es una marca de café en cápsulas que no existe. Vende de cuatro
 formas a la vez: un club por suscripción que manda cápsulas cada mes, una tienda
 online, unas cuantas boutiques físicas y máquinas de café como compra puntual.
 
-El negocio está simulado entero —tres años de historia, 280.000 filas— para
-poder hacer con él lo que se hace con los datos de un negocio real: entender qué
-está pasando, predecir qué va a pasar y decir qué habría que cambiar.
+El negocio está simulado entero: tres años de historia y 280.000 filas.
 
 El resultado es **un informe de siete páginas** que empieza por un resumen
 ejecutivo y termina en un plan de acción. Cada página cuenta un hallazgo, lo
-demuestra con un gráfico y acaba en recomendaciones concretas: qué hacer, por
+enseña con un gráfico y acaba en recomendaciones concretas: qué hacer, por
 qué, cuánto vale y con qué métrica se sabrá si funcionó.
-
-## Qué pretende demostrar
-
-El foco no está en montar el *pipeline*, sino en lo que viene después: leer los
-datos, encontrar lo que importa, comprobar que es cierto y contarlo de forma que
-alguien pueda decidir con ello. Tres rasgos del proyecto sirven a eso:
-
-- **Los datos están rotos a propósito.** Hay roturas de stock que parecen falta
-  de demanda, una semana de cobros perdida por una migración, suscripciones
-  regaladas mezcladas con las de verdad, un canal de marketing que dejó de ser
-  medible durante medio año y clientes duplicados por escribir el mismo email de
-  dos maneras. Ninguna de esas anomalías viene señalada. Detectarlas, medir su
-  efecto y documentarlas en el informe —en vez de corregirlas en silencio— forma
-  parte del análisis.
-- **Cada conclusión se comprueba.** Las predicciones se ponen a prueba contra el
-  pasado antes de publicarlas, y se dice cuánto se equivocan. Los rankings se
-  recalculan cambiando los criterios para ver si aguantan.
-- **Todo termina en una decisión.** 25 recomendaciones repartidas por las siete
-  páginas, cada una con el número que la justifica.
 
 ## Qué hay dentro del informe
 
 | Página | Qué responde |
 |---|---|
 | **Resumen ejecutivo** | Las cinco cosas que más dinero mueven, ordenadas por lo que devuelven frente a lo que cuestan |
-| **Suscriptores activos** | Cuántos hay, cuántos habrá dentro de seis meses y con cuánto margen de error |
+| **Suscriptores activos** | Cuántos hay, cómo ha crecido la base y dónde está su estacionalidad |
 | **Ingresos totales** | De dónde sale el dinero, cómo cambia el reparto entre canales y dónde se escondía una semana de cobros perdida |
 | **Demanda por sabor** | Cuántas cápsulas de cada sabor comprar, con las roturas de stock descontadas |
 | **Cohortes y RFM** | Cuánto dura un cliente, qué le hace irse y qué grupos de compradores merecen un trato distinto |
@@ -95,10 +76,11 @@ alguien pueda decidir con ello. Tres rasgos del proyecto sirven a eso:
   ese gasto huérfano sobre las altas sube el CAC medio de 11,71 € a 14,53 €, y
   no lo hace por igual en todos los canales —*paid social* sube un 44%—, así que
   reordena el ranking.
-- **Seis roturas de stock** dejaron sin vender 17.119 € de cápsulas. Tres cayeron
-  en los últimos siete meses, justo en el arranque de la previsión: corregirlas
-  sube un 15,3% la demanda prevista de Intenso 10, porque el modelo estaba
-  leyendo como falta de interés un cero que era falta de existencias.
+- **Seis roturas de stock** dejaron sin vender 17.119 € de cápsulas. En los
+  datos, un día sin existencias es un cero idéntico a un día sin demanda; se
+  separan contrastando la demanda esperada dentro de cada racha de ceros con el
+  club, que no se queda sin stock, como grupo de control: 6 de 44 candidatas,
+  sin falsos positivos.
 - **El descuento de bienvenida acorta la vida del cliente en 5,1 meses** (16,7
   frente a 21,8) y resta unos 128 € de LTV por alta. En vez de fidelizar,
   selecciona: separa a quien iba a quedarse de quien venía por el descuento.
@@ -110,6 +92,14 @@ alguien pueda decidir con ello. Tres rasgos del proyecto sirven a eso:
 280.841 filas repartidas en doce tablas, desde septiembre de 2023 hasta agosto
 de 2026. Las genera un script con semilla fija, así que dos ejecuciones producen
 exactamente lo mismo.
+
+**Los datos están rotos a propósito.** Hay roturas de stock que parecen falta de
+demanda, una semana de cobros perdida por una migración, suscripciones regaladas
+mezcladas con las de verdad, un canal de marketing que dejó de ser medible
+durante medio año y clientes duplicados por escribir el mismo email de dos
+maneras. Ninguna de esas anomalías viene señalada en los datos: se detectan, se
+mide su efecto y se documentan en el informe en vez de corregirse en silencio.
+El catálogo completo está en `docs/data_imperfections.md`.
 
 | Tabla | Filas | Qué es |
 |---|---:|---|
@@ -272,14 +262,6 @@ que sólo aparece en las altas, no en el número de clientes. Y los dos sabores 
 temporada, que son el 9% del volumen, son los que deciden el calendario de
 compras del año.
 
-**Predicción.** Previsión a seis meses de las tres series, cada una con su banda
-de incertidumbre. Ninguna se publica sin haberla puesto antes a prueba contra el
-pasado: se tapa el último tramo del histórico, se predice a ciegas y se compara
-con lo que de verdad pasó. La de suscriptores se equivoca un 3,2% de media,
-trece veces menos que limitarse a repetir el año anterior. La demanda de
-cápsulas se predice sabor a sabor y se agrega, agrupando los sabores por cómo se
-comportan y no por cómo están en el catálogo.
-
 **Cohortes y retención.** Se sigue a cada grupo de altas mes a mes para ver
 cuántos siguen y cuándo se van. Dos cosas que sólo se ven así: que los canales
 de captación parecen idénticos a los tres meses y no se separan hasta pasado el
@@ -303,12 +285,19 @@ bien el modelo importa mucho menos que arreglar la medición.
 canal frente a lo que ese cliente acaba dejando. Con dos salvedades que se
 publican junto al resultado: los ratios salen demasiado altos porque el dataset
 no tiene COGS y el LTV es ingreso, no margen; y el podio cambia según qué
-criterio se use, hasta un 66% en el ratio de un mismo canal.
+criterio se use, hasta un 66% en el ratio de un mismo canal. Por eso el ranking
+se recalcula con cada combinación de criterios —LTV observado o proyectado, CAC
+con o sin el gasto huérfano— y se publica cómo cambia el podio en cada una.
+
+**Plan de acción.** Cada página termina en recomendaciones: 23 en total,
+repartidas por las siete páginas, cada una con la cifra que la sostiene. El
+resumen ejecutivo reúne las cinco de más retorno.
 
 ## Cómo está hecho
 
 Python, DuckDB y dbt para los datos; pandas y statsmodels para el análisis;
-Plotly para los gráficos. Todo corre en un portátil, sin servicios de pago.
+Plotly para los gráficos; Airflow 3 con Cosmos para orquestarlo todo. Todo
+corre en un portátil, sin servicios de pago.
 
 El informe es HTML estático: se abre con doble clic, no necesita servidor y no
 hace ni una petición a internet. Tiene modo claro y oscuro, cada gráfico lleva
@@ -318,9 +307,99 @@ distinguen también con daltonismo.
 
 Ninguna cifra del texto está escrita a mano: todas se leen de los resultados de
 los análisis, así que el informe no puede quedarse desfasado respecto a los
-datos.
+datos. La última tarea del pipeline exporta esas mismas cifras a CSV planos en
+`dashboard/data/`, sin recalcular ninguna.
+
+### La orquestación
+
+El DAG `capsule_club_pipeline` encadena los cinco pasos del pipeline. Se lanza a
+mano, sin calendario. Son 61 tareas: dbt aporta dos por modelo (`.run` y
+`.test`), agrupadas por capa, y cada cuaderno tiene la suya.
+
+```mermaid
+flowchart LR
+    gen[generate_data]
+
+    subgraph dbt["dbt · Cosmos, modo watcher"]
+        direction LR
+        prod["dbt_producer_watcher<br/>un único dbt build"]
+        subgraph capas["un .run y un .test por modelo"]
+            direction LR
+            stg["staging<br/>12 modelos"] --> int["intermediate<br/>6 modelos"] --> mart["marts<br/>7 modelos"]
+        end
+        done[dbt_producer_watcher_done]
+        prod -. XCom .-> capas
+        prod --> done
+    end
+
+    subgraph analysis["analysis · pool de 3 huecos"]
+        direction LR
+        n01[01_time_series_suscriptores]
+        n02[02_time_series_ingresos]
+        n03[03_time_series_capsulas]
+        n04[04_cohorts_rfm]
+        n05[05_attribution]
+        n06[06_cac_ltv_crossover]
+        n04 --> n06
+        n05 --> n06
+    end
+
+    gen --> dbt --> analysis --> rep[build_report] --> exp[export_dashboard_data]
+```
+
+- **`generate_data`** escribe el parquet en bruto y el `warehouse.duckdb`.
+- **`dbt`** construye las siete tablas finales y pasa las 220 comprobaciones.
+- **`analysis`** ejecuta los seis cuadernos con papermill. Del 01 al 05 sólo leen
+  tablas de DuckDB y van en paralelo; el 06 espera al 04 y al 05 porque cruza sus
+  resultados. Comparten un pool de tres huecos: con cinco a la vez, DuckDB se
+  quedaba sin memoria dentro de la máquina virtual de Docker.
+- **`build_report`** genera el informe y **`export_dashboard_data`**, los CSV.
+
+**Por qué el modo watcher de Cosmos.** DuckDB admite un único proceso escritor
+sobre el fichero. El modo por defecto de Cosmos lanza un `dbt run` por modelo y
+en paralelo, y choca con el bloqueo de escritura (`Could not set lock on file`).
+En el modo watcher una sola tarea productora lanza un único `dbt build` —el mismo
+comando que en local, con los cuatro hilos de `profiles.yml`— y la tarea de cada
+modelo y la de sus tests se limitan a observarlo: un solo escritor por
+construcción, sin tener que serializar nada con un pool. Si el `dbt build`
+falla, la puerta `dbt_producer_watcher_done` lo propaga y nada de lo que va
+detrás arranca.
+
+El DAG se parsea a partir del `manifest.json` de dbt, que se genera al construir
+la imagen, y no lanzando dbt cada vez. La imagen separa tres entornos —Airflow
+con Cosmos, dbt y el stack de análisis—, cada uno en su propio venv, para que
+sus dependencias no choquen.
 
 ### Ejecutarlo en local
+
+Hay dos caminos, y los dos producen lo mismo.
+
+#### Con Airflow
+
+Necesita [Docker Desktop](https://www.docker.com/products/docker-desktop/) y
+[Astro CLI](https://www.astronomer.io/docs/astro/cli/install-cli).
+
+```bash
+astro dev start
+```
+
+La primera vez construye la imagen. Después, en la interfaz de Airflow
+(<http://localhost:8080>), lanzar el DAG `capsule_club_pipeline`: genera el
+dataset, construye las tablas, ejecuta los seis cuadernos, reconstruye el
+informe y exporta los CSV.
+
+Lo que escribe el DAG llega al repositorio por volúmenes de Docker: `data/`,
+`analysis/outputs/`, `report/dist/` y `dashboard/data/`. Cada cuaderno ejecutado
+se guarda junto al log de su tarea; los de `analysis/` no se tocan. El resto del
+código va dentro de la imagen, así que un cambio en los cuadernos, el generador,
+el informe o `dbt_project/` exige `astro dev restart`; sólo `dags/` se recarga
+en caliente.
+
+Antes de lanzarlo hay que cerrar cualquier cuaderno o sesión de Python que tenga
+abierto `data/warehouse.duckdb` desde fuera del contenedor: el bloqueo de
+escritura de DuckDB es el mismo.
+
+#### Sin Airflow
 
 Necesita Python 3.13. Los comandos son de Windows; en Linux o macOS, cambiar
 `venv\Scripts\` por `venv/bin/`.
@@ -341,21 +420,27 @@ cd ..
 venv\Scripts\python report\build_report.py
 ```
 
-El informe queda en `report/dist/index.html`, y esa carpeta va versionada: es el
-entregable, y el workflow de GitHub Actions la publica en Pages tal cual, sin
-reconstruir nada.
-
 El paso 3 lee los resultados de `analysis/outputs/*.json`, que **no** están
 versionados por ser regenerables. En una copia recién clonada hay que ejecutar
 antes los seis cuadernos de `analysis/`, cada uno de los cuales deja ahí su
-salida.
+salida. Con Airflow, de eso se encarga el grupo `analysis`.
+
+Por cualquiera de los dos caminos, el informe queda en `report/dist/index.html`,
+y esa carpeta va versionada: es el entregable, y el workflow de GitHub Actions
+la publica en Pages tal cual, sin reconstruir nada.
 
 ### Dónde está cada cosa
 
 ```
-data_generation/   generador del dataset sintético
-dbt_project/       las transformaciones y sus comprobaciones
-analysis/          seis cuadernos, uno por análisis
-report/            el generador del informe HTML
-docs/              esquema de datos, catálogo de imperfecciones y estructura del informe
+data_generation/            generador del dataset sintético
+dbt_project/                las transformaciones y sus comprobaciones
+analysis/                   seis cuadernos, uno por análisis
+report/                     el generador del informe HTML
+dashboard/                  exportación de las cifras del informe a CSV planos, con su diccionario de datos
+dags/                       el DAG de Airflow que encadena todo
+docs/                       esquema de datos, catálogo de imperfecciones y estructura del informe
+requirements/               dependencias partidas por entorno: análisis, dbt y Airflow
+Dockerfile                  imagen de Astro Runtime con los venvs de dbt y de análisis
+docker-compose.override.yml volúmenes que sacan al repositorio lo que escribe el DAG
+airflow_settings.yaml       el pool de los cuadernos, para el Airflow local
 ```

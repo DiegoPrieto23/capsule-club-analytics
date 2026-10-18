@@ -8,14 +8,9 @@ numpy>=1.26
 pyarrow>=16.0            # backend parquet
 duckdb>=1.5,<1.6         # misma versión menor que requirements/dbt.txt
 
-# --- Series temporales y forecasting ---
-statsmodels>=0.14        # STL, ADF, SARIMA
-prophet>=1.1.6           # forecast con estacionalidad y holidays; ver nota en README
+# --- Series temporales y estadística ---
+statsmodels>=0.14        # STL y MSTL
 scipy>=1.13
-
-# --- Machine learning ---
-scikit-learn>=1.5
-lightgbm>=4.5
 
 # --- Generación de datos sintéticos ---
 Faker>=30.0

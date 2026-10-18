@@ -21,6 +21,44 @@ Requisito previo: `python data_generation/generate_synthetic_data.py`, que crea
 DuckDB bloquea el fichero: cierra cualquier notebook o sesión de Python que lo
 tenga abierto antes de lanzar dbt.
 
+## Cómo se ejecuta en Airflow (Cosmos)
+
+En el DAG `capsule_club_pipeline` (`dags/capsule_club_pipeline.py`) este
+proyecto es el `DbtTaskGroup` `dbt`, entre `generate_data` y los notebooks. No
+hace falta lanzar nada a mano: `astro dev start` y lanzar el DAG.
+
+- **Modo `ExecutionMode.WATCHER`.** DuckDB admite un único proceso escritor, y
+  el modo por defecto de Cosmos (un `dbt run` por modelo, en paralelo) choca con
+  `Could not set lock on file`. En el modo watcher la tarea
+  `dbt_producer_watcher` lanza un único `dbt build` —el mismo comando que en
+  local, con los 4 threads de `profiles.yml`— y el resto de tareas del grupo lo
+  observan vía XCom. Un solo escritor por construcción.
+- **Dos tareas por modelo**, `<modelo>.run` y `<modelo>.test`
+  (`TestBehavior.AFTER_EACH`), agrupadas por carpeta: `models.staging`,
+  `models.intermediate` y `models.marts`. Los 220 tests corren dentro del mismo
+  `dbt build`; la tarea `.test` de un modelo falla si falla cualquiera de los
+  suyos, y un test con varios padres (`relationships`) cuenta en todos.
+- **Si el `dbt build` falla**, la puerta `dbt_producer_watcher_done` queda en
+  `upstream_failed` y los notebooks no arrancan. Las tareas de dbt no tienen
+  reintentos: el productor no repite el `dbt build`, y un sensor reintentado
+  lanzaría su propio `dbt run`, que competiría por el bloqueo.
+- **El DAG se parsea desde `target/manifest.json`** (`LoadMode.DBT_MANIFEST`),
+  que genera `dbt parse` al construir la imagen (ver `Dockerfile`). Este
+  directorio va horneado en la imagen, así que **cualquier cambio en dbt exige
+  `astro dev restart`**, que reconstruye la imagen y regenera el manifest.
+- **Mismo `profiles.yml`.** Cosmos lo usa tal cual (`profiles_yml_filepath`).
+  La ruta del warehouse llega por `CAPSULE_DUCKDB_PATH`
+  (`/usr/local/airflow/data/warehouse.duckdb`, definida en
+  `docker-compose.override.yml`); sin ella, el perfil usa la ruta relativa
+  `../data/warehouse.duckdb` de la ejecución local.
+- **dbt vive en su propio venv** dentro de la imagen (`/opt/venvs/dbt`, el
+  `dbt_executable_path` de Cosmos), con las versiones fijadas contra
+  `requirements/constraints.txt`: el mismo dbt dentro y fuera del contenedor.
+
+El bloqueo también aplica aquí: un notebook o una sesión de Python abiertos
+desde el host contra `data/warehouse.duckdb` hacen fallar el `dbt build` del
+contenedor.
+
 ## Capas
 
 | Capa | Materialización | Qué hace |

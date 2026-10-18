@@ -271,7 +271,7 @@ def build(data, fmt, Figure, table, enrich=True):
         ],
         "actions": {
             "heading": "Plan de acción",
-            "intro": ("Lo cinco de más retorno de todo el informe, ordenados por lo que "
+            "intro": ("Los cinco de más retorno de todo el informe, ordenados por lo que "
                       "devuelven frente a lo que cuestan. Cada uno se desarrolla en su "
                       "página."),
             "steps": [
