@@ -2,7 +2,7 @@
 
 ### 👉 **[Ver el informe interactivo en vivo](https://diegoprieto23.github.io/capsule-club-analytics/)**
 
-[![El informe](img/portada.png)](https://diegoprieto23.github.io/capsule-club-analytics/)
+[![Página de ingresos del informe: ingreso mensual por canal, reparto entre canales y la semana de cobros perdida](img/portada.png)](https://diegoprieto23.github.io/capsule-club-analytics/)
 
 ---
 
