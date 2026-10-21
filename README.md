@@ -1,126 +1,132 @@
 # Capsule Club Analytics
 
-### 👉 **[Ver el informe interactivo en vivo](https://diegoprieto23.github.io/capsule-club-analytics/)**
+### 👉 **[See the live interactive report](https://diegoprieto23.github.io/capsule-club-analytics/)**
 
-[![Página de ingresos del informe: ingreso mensual por canal, reparto entre canales y la semana de cobros perdida](img/portada.png)](https://diegoprieto23.github.io/capsule-club-analytics/)
+[![Revenue page of the report: monthly revenue by channel, channel mix over time and the lost week of payments](img/portada.png)](https://diegoprieto23.github.io/capsule-club-analytics/)
+
+*The report itself is written in Spanish.*
 
 ---
 
 ## About
 
-Proyecto de analítica de extremo a extremo sobre un negocio simulado de café en
-cápsulas. Cubre el recorrido completo: generación del dataset, modelado en dbt
-sobre DuckDB, seis análisis en Python, un informe HTML interactivo de siete
-páginas como entregable y un DAG de Airflow que encadena todo lo anterior.
+An end-to-end analytics project on a simulated coffee capsule business. It
+covers the whole journey: generating the dataset, modelling it in dbt on
+DuckDB, six analyses in Python, a seven-page interactive HTML report as the
+deliverable, and an Airflow DAG that chains all of the above.
 
-**Qué hace, en cinco piezas:**
+**What it does, in five pieces:**
 
-1. **Genera** un negocio sintético de tres años y 280.841 filas en doce tablas
-   —club de suscripción, tienda online, boutiques y venta de máquinas— con
-   defectos inyectados a propósito: roturas de stock, una semana de cobros
-   perdida, clientes duplicados y un canal de marketing que deja de ser medible
-   durante medio año.
-2. **Modela** ese dato en bruto hasta siete tablas analíticas, pasando por una
-   capa de limpieza y otra de lógica de negocio, con 220 comprobaciones
-   automáticas que se ejecutan en cada build.
-3. **Analiza** sobre esas tablas tres técnicas que se encadenan —series
-   temporales, cohortes y RFM, y atribución de marketing multimodelo— hasta el
-   cruce que las cierra: CAC por canal contra el LTV que ese canal acaba
-   dejando.
-4. **Publica** un informe HTML estático de siete páginas: gráficos Plotly con su
-   tabla de datos debajo, modo claro y oscuro, y 23 recomendaciones, cada una
-   con la cifra que la sostiene.
-5. **Orquesta** los cuatro pasos anteriores en un único DAG de Airflow 3, con
-   dbt dentro gracias a Cosmos: una tarea por modelo y por sus tests.
+1. **Generates** a three-year synthetic business with 280,841 rows across
+   twelve tables —subscription club, online shop, boutiques and machine
+   sales— with defects injected on purpose: stockouts, a lost week of
+   payments, duplicated customers and a marketing channel that stops being
+   measurable for six months.
+2. **Models** that raw data into seven analytical tables, through a cleaning
+   layer and a business-logic layer, with 220 automated checks that run on
+   every build.
+3. **Analyses** those tables with three techniques that build on each other
+   —time series, cohorts and RFM, and multi-model marketing attribution— up
+   to the crossover that closes them: CAC by channel against the LTV that
+   channel ends up bringing in.
+4. **Publishes** a static seven-page HTML report: Plotly charts with their
+   data table underneath, light and dark mode, and 23 recommendations, each
+   with the figure that backs it.
+5. **Orchestrates** the four previous steps in a single Airflow 3 DAG, with
+   dbt inside thanks to Cosmos: one task per model and one for its tests.
 
-La pregunta que hilan los siete capítulos es una: **qué canal de captación
-conviene** cuando se mide por lo que el cliente acaba dejando y no por lo que
-cuesta traerlo. La respuesta cambia el orden del ranking.
+The seven chapters follow a single question: **which acquisition channel is
+worth it** when measured by what the customer ends up leaving rather than by
+what it costs to bring them in. The answer flips the ranking.
 
 **Stack:** Python 3.13 · DuckDB · dbt · Airflow 3 + Cosmos (Astro CLI) ·
-pandas · statsmodels · Plotly. Todo se ejecuta en local, sin servicios de pago.
+pandas · statsmodels · Plotly. Everything runs locally, with no paid services.
 
-## El negocio simulado
+## The simulated business
 
-Capsule Club es una marca de café en cápsulas que no existe. Vende de cuatro
-formas a la vez: un club por suscripción que manda cápsulas cada mes, una tienda
-online, unas cuantas boutiques físicas y máquinas de café como compra puntual.
+Capsule Club is a coffee capsule brand that does not exist. It sells in four
+ways at once: a subscription club that ships capsules every month, an online
+shop, a handful of physical boutiques, and coffee machines as a one-off
+purchase.
 
-El negocio está simulado entero: tres años de historia y 280.000 filas.
+The whole business is simulated: three years of history and 280,000 rows.
 
-El resultado es **un informe de siete páginas** que empieza por un resumen
-ejecutivo y termina en un plan de acción. Cada página cuenta un hallazgo, lo
-enseña con un gráfico y acaba en recomendaciones concretas: qué hacer, por
-qué, cuánto vale y con qué métrica se sabrá si funcionó.
+The result is **a seven-page report** that opens with an executive summary
+and ends with an action plan. Each page tells one finding, shows it with a
+chart and ends with concrete recommendations: what to do, why, what it is
+worth and which metric will tell whether it worked.
 
-## Qué hay dentro del informe
+## What's inside the report
 
-| Página | Qué responde |
+| Page | What it answers |
 |---|---|
-| **Resumen ejecutivo** | Las cinco cosas que más dinero mueven, ordenadas por lo que devuelven frente a lo que cuestan |
-| **Suscriptores activos** | Cuántos hay, cómo ha crecido la base y dónde está su estacionalidad |
-| **Ingresos totales** | De dónde sale el dinero, cómo cambia el reparto entre canales y dónde se escondía una semana de cobros perdida |
-| **Demanda por sabor** | Cuántas cápsulas de cada sabor comprar, con las roturas de stock descontadas |
-| **Cohortes y RFM** | Cuánto dura un cliente, qué le hace irse y qué grupos de compradores merecen un trato distinto |
-| **Atribución** | A qué canal hay que darle el mérito de cada alta, y cuánto marketing no se puede atribuir a nadie |
-| **CAC × LTV** | Lo que cuesta captar un cliente contra lo que acaba dejando, canal por canal |
+| **Executive summary** | The five levers that move the most money, ranked by return against cost |
+| **Active subscribers** | How many there are, how the base has grown and where its seasonality lies |
+| **Total revenue** | Where the money comes from, how the channel mix shifts and where a lost week of payments was hiding |
+| **Demand by flavour** | How many capsules of each flavour to buy, with stockouts netted out |
+| **Cohorts and RFM** | How long a customer lasts, what makes them leave and which buyer groups deserve different treatment |
+| **Attribution** | Which channel deserves credit for each sign-up, and how much marketing cannot be attributed to anyone |
+| **CAC × LTV** | What it costs to acquire a customer against what they end up leaving, channel by channel |
 
-### Algunos de los hallazgos
+### Some of the findings
 
-- **El canal más barato no es el que más vale.** El podcast capta suscriptores
-  por 13,52 € y *paid social* por 14,44 €, pero el segundo retiene diez puntos
-  mejor al año y acaba dejando más (37,3x contra 33,7x). Ordenar los canales por
-  coste de captación da el orden inverso al de valor.
-- **El 39,4% del marketing no se puede atribuir a ninguna conversión.** No es
-  gasto perdido, pero tampoco optimizable: se desconoce a quién llegó. Cargar
-  ese gasto huérfano sobre las altas sube el CAC medio de 11,71 € a 14,53 €, y
-  no lo hace por igual en todos los canales —*paid social* sube un 44%—, así que
-  reordena el ranking.
-- **Seis roturas de stock** dejaron sin vender 17.119 € de cápsulas. En los
-  datos, un día sin existencias es un cero idéntico a un día sin demanda; se
-  separan contrastando la demanda esperada dentro de cada racha de ceros con el
-  club, que no se queda sin stock, como grupo de control: 6 de 44 candidatas,
-  sin falsos positivos.
-- **El descuento de bienvenida acorta la vida del cliente en 5,1 meses** (16,7
-  frente a 21,8) y resta unos 128 € de LTV por alta. En vez de fidelizar,
-  selecciona: separa a quien iba a quedarse de quien venía por el descuento.
-- **274 cancelaciones se originan en un cobro fallido**, no en una decisión del
-  cliente, y no hay ningún intento de recuperación registrado.
+- **The cheapest channel is not the most valuable one.** Podcasts acquire
+  subscribers for €13.52 and *paid social* for €14.44, but the latter retains
+  ten points better at one year and ends up returning more (37.3x vs 33.7x).
+  Ranking channels by acquisition cost gives the reverse order of ranking them
+  by value.
+- **39.4% of marketing cannot be attributed to any conversion.** It is not
+  wasted spend, but it is not optimisable either: nobody knows who it reached.
+  Loading that orphan spend onto sign-ups raises the average CAC from €11.71
+  to €14.53, and not evenly across channels —*paid social* goes up 44%— so it
+  reorders the ranking.
+- **Six stockouts** left €17,119 of capsules unsold. In the data, a day
+  without stock is a zero identical to a day without demand; they are told
+  apart by testing the expected demand inside each run of zeros, using the
+  club —which never runs out of stock— as a control group: 6 out of 44
+  candidates, with no false positives.
+- **The welcome discount shortens customer lifetime by 5.1 months** (16.7 vs
+  21.8) and takes about €128 of LTV off each sign-up. Rather than building
+  loyalty, it selects: it separates those who were going to stay from those
+  who came for the discount.
+- **274 cancellations originate in a failed payment**, not in a customer
+  decision, and there is no recorded recovery attempt.
 
-## Los datos
+## The data
 
-280.841 filas repartidas en doce tablas, desde septiembre de 2023 hasta agosto
-de 2026. Las genera un script con semilla fija, así que dos ejecuciones producen
-exactamente lo mismo.
+280,841 rows across twelve tables, from September 2023 to August 2026. They
+are produced by a script with a fixed seed, so two runs produce exactly the
+same output.
 
-**Los datos están rotos a propósito.** Hay roturas de stock que parecen falta de
-demanda, una semana de cobros perdida por una migración, suscripciones regaladas
-mezcladas con las de verdad, un canal de marketing que dejó de ser medible
-durante medio año y clientes duplicados por escribir el mismo email de dos
-maneras. Ninguna de esas anomalías viene señalada en los datos: se detectan, se
-mide su efecto y se documentan en el informe en vez de corregirse en silencio.
-El catálogo completo está en `docs/data_imperfections.md`.
+**The data is broken on purpose.** There are stockouts that look like lack of
+demand, a week of payments lost in a migration, gifted subscriptions mixed in
+with real ones, a marketing channel that stopped being measurable for six
+months, and customers duplicated by typing the same email in two different
+ways. None of these anomalies is flagged in the data: they are detected, their
+effect is measured and they are documented in the report instead of being
+silently fixed. The full catalogue is in `docs/data_imperfections.md`.
 
-| Tabla | Filas | Qué es |
+| Table | Rows | What it is |
 |---|---:|---|
-| `customers` | 12.305 | Clientes, sean suscriptores, compradores o ambos |
-| `subscriptions` | 5.110 | Suscripciones al club, con su plan y su estado |
-| `subscription_events` | 12.385 | Altas, pausas, cambios de plan, fallos de cobro y bajas |
-| `shipments` | 45.508 | Envíos del club, con el sabor de cada cápsula |
-| `shop_orders` / `shop_order_lines` | 39.888 / 82.925 | Pedidos de tienda online y boutique |
-| `machine_orders` | 3.417 | Ventas de máquinas |
-| `payments` | 32.726 | Cobros de las suscripciones |
-| `marketing_touchpoints` | 46.541 | Cada contacto de marketing antes de un alta |
-| `products` · `machines` · `stores` | 23 · 5 · 8 | Catálogo y tiendas |
+| `customers` | 12,305 | Customers, whether subscribers, buyers or both |
+| `subscriptions` | 5,110 | Club subscriptions, with their plan and status |
+| `subscription_events` | 12,385 | Sign-ups, pauses, plan changes, payment failures and cancellations |
+| `shipments` | 45,508 | Club shipments, with the flavour of each capsule |
+| `shop_orders` / `shop_order_lines` | 39,888 / 82,925 | Online shop and boutique orders |
+| `machine_orders` | 3,417 | Machine sales |
+| `payments` | 32,726 | Subscription payments |
+| `marketing_touchpoints` | 46,541 | Every marketing touch before a sign-up |
+| `products` · `machines` · `stores` | 23 · 5 · 8 | Catalogue and stores |
 
-### El modelo
+### The model
 
-Los datos entran en bruto y salen en siete tablas listas para analizar. En medio
-hay una capa que limpia (`staging`) y otra que resuelve la lógica de negocio
-difícil (`intermediate`): unificar clientes duplicados, reconstruir el recorrido
-de marketing de cada alta, calcular el estado de cada suscripción mes a mes.
+The data comes in raw and leaves as seven tables ready for analysis. In
+between there is a cleaning layer (`staging`) and another one that resolves
+the hard business logic (`intermediate`): merging duplicated customers,
+rebuilding the marketing journey of each sign-up, computing the state of each
+subscription month by month.
 
-Así entran, tal y como los deja el generador:
+This is how it comes in, exactly as the generator leaves it:
 
 ```mermaid
 erDiagram
@@ -145,7 +151,7 @@ erDiagram
     subscription_events {
         string event_id PK
         string subscription_id FK
-        string event_type "alta, pausa, cambio de plan, fallo de cobro, baja"
+        string event_type "sign-up, pause, plan change, payment failure, cancellation"
         date   event_date
     }
     shipments {
@@ -171,8 +177,8 @@ erDiagram
         string store_id FK "nullable"
     }
     shop_order_lines {
-        string order_id PK "FK a shop_orders"
-        string product_sku PK "FK a products"
+        string order_id PK "FK to shop_orders"
+        string product_sku PK "FK to products"
         int    quantity
         float  unit_price
     }
@@ -212,127 +218,127 @@ erDiagram
         bool   resolved_to_conversion
     }
 
-    customers            ||--o{ subscriptions         : "se suscribe"
-    customers            |o--o{ shop_orders           : "compra en tienda"
-    customers            |o--o{ machine_orders        : "compra máquina"
-    customers            |o--o{ marketing_touchpoints : "recibe impactos"
-    customers            }o--o| stores                : "tienda de alta"
-    subscriptions        ||--o{ subscription_events   : "registra"
-    subscriptions        ||--o{ shipments             : "genera envíos"
-    subscriptions        ||--o{ payments              : "se cobra en"
-    shipments            }o--|| products              : "envía el SKU"
-    shop_orders          ||--|{ shop_order_lines      : "se desglosa en"
-    shop_order_lines     }o--|| products              : "referencia"
-    shop_orders          }o--o| stores                : "se hace en"
-    machine_orders       }o--|| machines              : "modelo"
-    machine_orders       }o--o| stores                : "se hace en"
+    customers            ||--o{ subscriptions         : "subscribes"
+    customers            |o--o{ shop_orders           : "buys in shop"
+    customers            |o--o{ machine_orders        : "buys machine"
+    customers            |o--o{ marketing_touchpoints : "is reached by"
+    customers            }o--o| stores                : "home store"
+    subscriptions        ||--o{ subscription_events   : "logs"
+    subscriptions        ||--o{ shipments             : "generates"
+    subscriptions        ||--o{ payments              : "is charged in"
+    shipments            }o--|| products              : "ships SKU"
+    shop_orders          ||--|{ shop_order_lines      : "breaks down into"
+    shop_order_lines     }o--|| products              : "references"
+    shop_orders          }o--o| stores                : "placed at"
+    machine_orders       }o--|| machines              : "model"
+    machine_orders       }o--o| stores                : "placed at"
 ```
 
-Los extremos opcionales del diagrama son deliberados, y son los que dan trabajo:
-un pedido puede no tener cliente (compra en boutique sin fidelización, el 27,4%
-de los pedidos de tienda), un impacto de marketing puede no resolverse a nadie
-—el 39,4%— y un cliente puede no tener tienda de alta porque entró por internet.
-Cada uno de esos huecos obliga a tomar una decisión explícita antes de poder
-medir.
+The optional ends of the diagram are deliberate, and they are the ones that
+make the work: an order may have no customer (a boutique purchase without a
+loyalty card, 27.4% of shop orders), a marketing touch may resolve to nobody
+—39.4%— and a customer may have no home store because they signed up online.
+Each of those gaps forces an explicit decision before anything can be
+measured.
 
-Las siete tablas finales que consumen los análisis:
+The seven final tables the analyses consume:
 
-| Tabla | Grano | Para qué |
+| Table | Grain | What for |
 |---|---|---|
-| `dim_customers` | Cliente | Quién es, por dónde entró, cuánto ha gastado |
-| `dim_subscriptions` | Suscripción | Cuándo empezó, qué plan, si sigue viva |
-| `fct_subscriptions_monthly` | Suscripción × mes | La foto mensual: activo, en pausa o de baja, y cuánta cuota |
-| `fct_shipments` | Envío × sabor | Qué cápsulas salieron y cuándo |
-| `fct_shop_orders` | Pedido | Compras de tienda online y boutique |
-| `fct_machine_orders` | Pedido | Ventas de máquinas |
-| `fct_marketing_attribution` | Alta | El recorrido de contactos que llevó a cada suscripción |
+| `dim_customers` | Customer | Who they are, where they came from, how much they have spent |
+| `dim_subscriptions` | Subscription | When it started, which plan, whether it is still alive |
+| `fct_subscriptions_monthly` | Subscription × month | The monthly snapshot: active, paused or cancelled, and how much fee |
+| `fct_shipments` | Shipment × flavour | Which capsules went out and when |
+| `fct_shop_orders` | Order | Online shop and boutique purchases |
+| `fct_machine_orders` | Order | Machine sales |
+| `fct_marketing_attribution` | Sign-up | The journey of touches that led to each subscription |
 
-Cada tabla tiene sus comprobaciones automáticas: que no haya duplicados, que no
-falten campos obligatorios, que ninguna referencia apunte al vacío, que los
-importes cuadren. **220 comprobaciones en total**, y todas pasan en cada
-ejecución. Es lo que permite distinguir una anomalía real de los datos de un
-error del proceso.
+Every table has its automated checks: no duplicates, no missing mandatory
+fields, no reference pointing to nothing, amounts that add up. **220 checks
+in total**, and all of them pass on every run. That is what makes it possible
+to tell a real anomaly in the data apart from a pipeline error.
 
-## Qué se ha medido
+## What was measured
 
-**Series temporales.** Tres series —suscriptores, ingresos y cápsulas por
-sabor— separadas en tendencia, estacionalidad y ruido. El negocio resulta tener
-dos calendarios distintos: uno anual (agosto flojo, marzo fuerte) y otro semanal
-que sólo aparece en las altas, no en el número de clientes. Y los dos sabores de
-temporada, que son el 9% del volumen, son los que deciden el calendario de
-compras del año.
+**Time series.** Three series —subscribers, revenue and capsules by flavour—
+split into trend, seasonality and noise. The business turns out to run on two
+different calendars: a yearly one (weak August, strong March) and a weekly
+one that only shows up in sign-ups, not in the customer count. And the two
+seasonal flavours, 9% of volume, are the ones that set the year's purchasing
+calendar.
 
-**Cohortes y retención.** Se sigue a cada grupo de altas mes a mes para ver
-cuántos siguen y cuándo se van. Dos cosas que sólo se ven así: que los canales
-de captación parecen idénticos a los tres meses y no se separan hasta pasado el
-año, y que el hueco entre "clientes que siguen" y "dinero que sigue entrando" no
-lo abre el cambio de plan —que no pesa nada— sino las pausas, que explican el
-102% de la diferencia.
+**Cohorts and retention.** Each group of sign-ups is followed month by month
+to see how many stay and when they leave. Two things that only show up this
+way: acquisition channels look identical at three months and do not split
+until after a year, and the gap between "customers who stay" and "money that
+keeps coming in" is not opened by plan changes —which weigh nothing— but by
+pauses, which explain 102% of the difference.
 
-**Segmentación RFM.** Los compradores de tienda agrupados por cuándo compraron
-por última vez, cuántas veces y cuánto se gastaron. Los campeones son uno de
-cada seis clientes y casi un tercio del ingreso, y la mayoría no tiene
-suscripción.
+**RFM segmentation.** Shop buyers grouped by when they last bought, how often
+and how much they spent. Champions are one in six customers and almost a
+third of revenue, and most of them have no subscription.
 
-**Atribución de marketing.** Cuatro formas de repartir el mérito entre canales:
-darle todo al primer contacto, todo al último, a partes iguales, y un modelo de
-Markov que mide cuánto caería la conversión si un canal desapareciera. Los
-cuatro dan casi lo mismo —3,6 puntos de dispersión máxima y el mismo orden de
-canales— mientras que el 39,4% del gasto no se puede asignar a nadie: elegir
-bien el modelo importa mucho menos que arreglar la medición.
+**Marketing attribution.** Four ways of splitting credit across channels: all
+to the first touch, all to the last, equal parts, and a Markov model that
+measures how much conversion would drop if a channel disappeared. All four
+give nearly the same answer —3.6 points of maximum spread and the same channel
+order— while 39.4% of spend cannot be assigned to anyone: picking the right
+model matters far less than fixing the measurement.
 
-**Coste contra valor.** El cierre: lo que cuesta captar un cliente por cada
-canal frente a lo que ese cliente acaba dejando. Con dos salvedades que se
-publican junto al resultado: los ratios salen demasiado altos porque el dataset
-no tiene COGS y el LTV es ingreso, no margen; y el podio cambia según qué
-criterio se use, hasta un 66% en el ratio de un mismo canal. Por eso el ranking
-se recalcula con cada combinación de criterios —LTV observado o proyectado, CAC
-con o sin el gasto huérfano— y se publica cómo cambia el podio en cada una.
+**Cost against value.** The closing piece: what it costs to acquire a
+customer through each channel against what that customer ends up leaving.
+With two caveats published alongside the result: the ratios come out too high
+because the dataset has no COGS and LTV is revenue, not margin; and the podium
+changes depending on the criteria used, by up to 66% in the ratio of a single
+channel. That is why the ranking is recomputed for every combination of
+criteria —observed or projected LTV, CAC with or without orphan spend— and
+the report shows how the podium changes in each one.
 
-**Plan de acción.** Cada página termina en recomendaciones: 23 en total,
-repartidas por las siete páginas, cada una con la cifra que la sostiene. El
-resumen ejecutivo reúne las cinco de más retorno.
+**Action plan.** Each page ends with recommendations: 23 in total, spread
+across the seven pages, each with the figure that backs it. The executive
+summary gathers the five with the highest return.
 
-## Cómo está hecho
+## How it's built
 
-Python, DuckDB y dbt para los datos; pandas y statsmodels para el análisis;
-Plotly para los gráficos; Airflow 3 con Cosmos para orquestarlo todo. Todo
-corre en un portátil, sin servicios de pago.
+Python, DuckDB and dbt for the data; pandas and statsmodels for the analysis;
+Plotly for the charts; Airflow 3 with Cosmos to orchestrate it all. Everything
+runs on a laptop, with no paid services.
 
-El informe es HTML estático: se abre con doble clic, no necesita servidor y no
-hace ni una petición a internet. Tiene modo claro y oscuro, cada gráfico lleva
-su tabla de datos debajo para que el color nunca sea la única forma de leer un
-valor, y los colores están elegidos con un validador que comprueba que se
-distinguen también con daltonismo.
+The report is static HTML: it opens with a double click, needs no server and
+makes not a single request to the internet. It has light and dark mode, every
+chart carries its data table underneath so colour is never the only way to
+read a value, and the colours are chosen with a validator that checks they
+remain distinguishable under colour blindness.
 
-Ninguna cifra del texto está escrita a mano: todas se leen de los resultados de
-los análisis, así que el informe no puede quedarse desfasado respecto a los
-datos. La última tarea del pipeline exporta esas mismas cifras a CSV planos en
-`dashboard/data/`, sin recalcular ninguna.
+No figure in the text is written by hand: they are all read from the analysis
+outputs, so the report cannot drift out of sync with the data. The last task
+of the pipeline exports those same figures to flat CSVs in `dashboard/data/`,
+without recomputing any of them.
 
-### La orquestación
+### Orchestration
 
-El DAG `capsule_club_pipeline` encadena los cinco pasos del pipeline. Se lanza a
-mano, sin calendario. Son 61 tareas: dbt aporta dos por modelo (`.run` y
-`.test`), agrupadas por capa, y cada cuaderno tiene la suya.
+The `capsule_club_pipeline` DAG chains the five steps of the pipeline. It is
+triggered manually, with no schedule. It has 61 tasks: dbt contributes two
+per model (`.run` and `.test`), grouped by layer, and each notebook has its
+own.
 
 ```mermaid
 flowchart LR
     gen[generate_data]
 
-    subgraph dbt["dbt · Cosmos, modo watcher"]
+    subgraph dbt["dbt · Cosmos, watcher mode"]
         direction LR
-        prod["dbt_producer_watcher<br/>un único dbt build"]
-        subgraph capas["un .run y un .test por modelo"]
+        prod["dbt_producer_watcher<br/>a single dbt build"]
+        subgraph capas["one .run and one .test per model"]
             direction LR
-            stg["staging<br/>12 modelos"] --> int["intermediate<br/>6 modelos"] --> mart["marts<br/>7 modelos"]
+            stg["staging<br/>12 models"] --> int["intermediate<br/>6 models"] --> mart["marts<br/>7 models"]
         end
         done[dbt_producer_watcher_done]
         prod -. XCom .-> capas
         prod --> done
     end
 
-    subgraph analysis["analysis · pool de 3 huecos"]
+    subgraph analysis["analysis · 3-slot pool"]
         direction LR
         n01[01_time_series_suscriptores]
         n02[02_time_series_ingresos]
@@ -347,126 +353,128 @@ flowchart LR
     gen --> dbt --> analysis --> rep[build_report] --> exp[export_dashboard_data]
 ```
 
-- **`generate_data`** escribe el parquet en bruto y el `warehouse.duckdb`.
-- **`dbt`** construye las siete tablas finales y pasa las 220 comprobaciones.
-- **`analysis`** ejecuta los seis cuadernos con papermill. Del 01 al 05 sólo leen
-  tablas de DuckDB y van en paralelo; el 06 espera al 04 y al 05 porque cruza sus
-  resultados. Comparten un pool de tres huecos: con cinco a la vez, DuckDB se
-  quedaba sin memoria dentro de la máquina virtual de Docker.
-- **`build_report`** genera el informe y **`export_dashboard_data`**, los CSV.
+- **`generate_data`** writes the raw parquet files and `warehouse.duckdb`.
+- **`dbt`** builds the seven final tables and runs the 220 checks.
+- **`analysis`** runs the six notebooks with papermill. 01 to 05 only read
+  DuckDB tables and run in parallel; 06 waits for 04 and 05 because it
+  crosses their results. They share a three-slot pool: with five at once,
+  DuckDB ran out of memory inside the Docker virtual machine.
+- **`build_report`** generates the report and **`export_dashboard_data`**, the
+  CSVs.
 
-**Por qué el modo watcher de Cosmos.** DuckDB admite un único proceso escritor
-sobre el fichero. El modo por defecto de Cosmos lanza un `dbt run` por modelo y
-en paralelo, y choca con el bloqueo de escritura (`Could not set lock on file`).
-En el modo watcher una sola tarea productora lanza un único `dbt build` —el mismo
-comando que en local, con los cuatro hilos de `profiles.yml`— y la tarea de cada
-modelo y la de sus tests se limitan a observarlo: un solo escritor por
-construcción, sin tener que serializar nada con un pool. Si el `dbt build`
-falla, la puerta `dbt_producer_watcher_done` lo propaga y nada de lo que va
-detrás arranca.
+**Why Cosmos watcher mode.** DuckDB allows a single writer process on the
+file. Cosmos's default mode launches one `dbt run` per model, in parallel, and
+hits the write lock (`Could not set lock on file`). In watcher mode a single
+producer task launches a single `dbt build` —the same command as locally,
+with the four threads from `profiles.yml`— and each model's task and its tests
+task just watch it: one writer by construction, without having to serialise
+anything through a pool. If the `dbt build` fails, the
+`dbt_producer_watcher_done` gate propagates it and nothing downstream starts.
 
-El DAG se parsea a partir del `manifest.json` de dbt, que se genera al construir
-la imagen, y no lanzando dbt cada vez. La imagen separa tres entornos —Airflow
-con Cosmos, dbt y el stack de análisis—, cada uno en su propio venv, para que
-sus dependencias no choquen.
+The DAG is parsed from dbt's `manifest.json`, which is generated when the
+image is built, rather than by running dbt every time. The image separates
+three environments —Airflow with Cosmos, dbt, and the analysis stack— each in
+its own venv, so their dependencies do not clash.
 
-### Ejecutarlo en local
+### Running it locally
 
-Hay dos caminos, y los dos producen lo mismo.
+There are two paths, and both produce the same result.
 
-#### Con Airflow
+#### With Airflow
 
-Necesita [Docker Desktop](https://www.docker.com/products/docker-desktop/) y
-[Astro CLI](https://www.astronomer.io/docs/astro/cli/install-cli). Los comandos
-se ejecutan desde la raíz del repositorio.
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) and
+[Astro CLI](https://www.astronomer.io/docs/astro/cli/install-cli). Commands are
+run from the repository root.
 
-1. **Levantar Airflow.** Con Docker Desktop abierto:
+1. **Start Airflow.** With Docker Desktop open:
 
    ```bash
    astro dev start
    ```
 
-   La primera vez construye la imagen y tarda unos minutos; después arranca en
-   segundos. Termina mostrando la dirección de la interfaz.
+   The first time it builds the image and takes a few minutes; after that it
+   starts in seconds. It ends by printing the UI address.
 
-2. **Abrir la interfaz** en <http://localhost:8080>. En local no pide usuario.
+2. **Open the UI** at <http://localhost:8080>. Locally it does not ask for a
+   user.
 
-3. **Ver el DAG.** En **Dags** → `capsule_club_pipeline`. El interruptor tiene
-   que estar activado: un DAG en pausa deja las ejecuciones en cola. La pestaña
-   **Graph** dibuja el pipeline, con los grupos `dbt` y `analysis`
-   desplegables; **Grid** muestra cada ejecución tarea a tarea.
+3. **Find the DAG.** In **Dags** → `capsule_club_pipeline`. The toggle must be
+   on: a paused DAG leaves runs queued. The **Graph** tab draws the pipeline,
+   with the `dbt` and `analysis` groups expandable; **Grid** shows each run
+   task by task.
 
-4. **Lanzarlo** con el botón **Trigger**, o desde la terminal:
+4. **Trigger it** with the **Trigger** button, or from the terminal:
 
    ```bash
    astro dev run dags trigger capsule_club_pipeline
    ```
 
-   Genera el dataset, construye las tablas, ejecuta los seis cuadernos,
-   reconstruye el informe y exporta los CSV. Tarda unos dos minutos y termina
-   con las 61 tareas en verde. El log de cada tarea se abre desde **Grid**; el
-   de `dbt.dbt_producer_watcher` lleva el `dbt build` completo, que acaba en
+   It generates the dataset, builds the tables, runs the six notebooks,
+   rebuilds the report and exports the CSVs. It takes about two minutes and
+   finishes with all 61 tasks green. Each task's log opens from **Grid**; the
+   one for `dbt.dbt_producer_watcher` holds the full `dbt build`, which ends in
    `PASS=245`.
 
-5. **Ver el informe** en `report/dist/index.html`, con doble clic. La fecha
-   "Generado el …" de la cabecera es la de la ejecución.
+5. **Open the report** at `report/dist/index.html`, with a double click. The
+   "Generado el …" date in the header is the run date.
 
-6. **Apagarlo** con `astro dev stop`, que para los contenedores sin borrar
-   nada. Si algo falla al arrancar, `astro dev logs` muestra los logs.
+6. **Shut it down** with `astro dev stop`, which stops the containers without
+   deleting anything. If something fails on startup, `astro dev logs` shows
+   the logs.
 
-Antes de lanzar el DAG hay que cerrar cualquier cuaderno o sesión de Python que
-tenga abierto `data/warehouse.duckdb` desde fuera del contenedor: el bloqueo de
-escritura de DuckDB es el mismo.
+Before triggering the DAG, close any notebook or Python session that has
+`data/warehouse.duckdb` open outside the container: DuckDB's write lock is the
+same one.
 
-Lo que escribe el DAG llega al repositorio por volúmenes de Docker: `data/`,
-`analysis/outputs/`, `report/dist/` y `dashboard/data/`. Cada cuaderno ejecutado
-se guarda junto al log de su tarea; los de `analysis/` no se tocan. El resto del
-código va dentro de la imagen, así que un cambio en los cuadernos, el generador,
-el informe o `dbt_project/` exige `astro dev restart`; sólo `dags/` se recarga
-en caliente.
+What the DAG writes reaches the repository through Docker volumes: `data/`,
+`analysis/outputs/`, `report/dist/` and `dashboard/data/`. Each executed
+notebook is saved next to its task's log; the ones in `analysis/` are left
+untouched. The rest of the code is baked into the image, so a change to the
+notebooks, the generator, the report or `dbt_project/` requires
+`astro dev restart`; only `dags/` is hot-reloaded.
 
-#### Sin Airflow
+#### Without Airflow
 
-Necesita Python 3.13. Los comandos son de Windows; en Linux o macOS, cambiar
-`venv\Scripts\` por `venv/bin/`.
+Requires Python 3.13. The commands are for Windows; on Linux or macOS, replace
+`venv\Scripts\` with `venv/bin/`.
 
 ```bash
 python -m venv venv
 venv\Scripts\pip install -r requirements.txt
 
-# 1. Generar el dataset (~15 s)
+# 1. Generate the dataset (~15 s)
 venv\Scripts\python data_generation\generate_synthetic_data.py
 
-# 2. Construir las tablas y pasar las comprobaciones
+# 2. Build the tables and run the checks
 cd dbt_project
 ..\venv\Scripts\dbt build --profiles-dir .
 
-# 3. Reconstruir el informe
+# 3. Rebuild the report
 cd ..
 venv\Scripts\python report\build_report.py
 ```
 
-El paso 3 lee los resultados de `analysis/outputs/*.json`, que **no** están
-versionados por ser regenerables. En una copia recién clonada hay que ejecutar
-antes los seis cuadernos de `analysis/`, cada uno de los cuales deja ahí su
-salida. Con Airflow, de eso se encarga el grupo `analysis`.
+Step 3 reads the results from `analysis/outputs/*.json`, which are **not**
+versioned because they can be regenerated. On a fresh clone you first need to
+run the six notebooks in `analysis/`, each of which leaves its output there.
+With Airflow, the `analysis` group takes care of that.
 
-Por cualquiera de los dos caminos, el informe queda en `report/dist/index.html`,
-y esa carpeta va versionada: es el entregable, y el workflow de GitHub Actions
-la publica en Pages tal cual, sin reconstruir nada.
+Either way, the report ends up in `report/dist/index.html`, and that folder is
+versioned: it is the deliverable, and the GitHub Actions workflow publishes it
+to Pages as is, without rebuilding anything.
 
-### Dónde está cada cosa
+### Where everything lives
 
 ```
-data_generation/            generador del dataset sintético
-dbt_project/                las transformaciones y sus comprobaciones
-analysis/                   seis cuadernos, uno por análisis
-report/                     el generador del informe HTML
-dashboard/                  exportación de las cifras del informe a CSV planos, con su diccionario de datos
-dags/                       el DAG de Airflow que encadena todo
-docs/                       esquema de datos, catálogo de imperfecciones y estructura del informe
-requirements/               dependencias partidas por entorno: análisis, dbt y Airflow
-Dockerfile                  imagen de Astro Runtime con los venvs de dbt y de análisis
-docker-compose.override.yml volúmenes que sacan al repositorio lo que escribe el DAG
-airflow_settings.yaml       el pool de los cuadernos, para el Airflow local
+data_generation/            synthetic dataset generator
+dbt_project/                the transformations and their checks
+analysis/                   six notebooks, one per analysis
+report/                     the HTML report generator
+dashboard/                  export of the report's figures to flat CSVs, with their data dictionary
+dags/                       the Airflow DAG that chains everything
+docs/                       data schema, imperfections catalogue and report structure
+requirements/               dependencies split by environment: analysis, dbt and Airflow
+Dockerfile                  Astro Runtime image with the dbt and analysis venvs
+docker-compose.override.yml volumes that bring what the DAG writes back into the repository
+airflow_settings.yaml       the notebooks pool, for local Airflow
 ```
