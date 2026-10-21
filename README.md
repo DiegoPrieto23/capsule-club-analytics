@@ -384,7 +384,8 @@ There are two paths, and both produce the same result.
 
 Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) and
 [Astro CLI](https://www.astronomer.io/docs/astro/cli/install-cli). Commands are
-run from the repository root.
+run from the repository root. For a step-by-step version with PowerShell
+commands, see [TRY_AIRFLOW.md](TRY_AIRFLOW.md).
 
 1. **Start Airflow.** With Docker Desktop open:
 
