@@ -71,3 +71,6 @@ desktop.ini
 .env
 .env.*
 !.env.example
+
+# --- Ficheros pendientes de borrar, sólo en local ---
+_to_delete/
